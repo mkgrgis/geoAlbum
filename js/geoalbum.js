@@ -254,7 +254,7 @@ geoAlbum.prototype.processGroupDiv = function ( div, i_gr ){	// Добавляю
 geoAlbum.prototype.LonLatGeoLayer = function (i_gr, i_im, geoPoint, req){
 	var matrixEl = this.geoDivs[i_gr].imageGeoDivs[i_im];
 	matrixEl.Geo = geoPoint;
-	var lt = L.letterMarker(geoPoint, req.letter);
+	var lt = L.letterMarker(geoPoint, req.letter, 'passiveImage');
 	var text = this.text_Im(matrixEl.div);
 	if (text)
 		this.imgGeoLayer(lt, text);
@@ -268,7 +268,7 @@ geoAlbum.prototype.processImageDiv = function ( div, i_im){
 	var n_im = this.geoDivs[i_gr].imageGeoDivs.length-1;
 	if( div.getElementsByTagName('img').length > 0 /*|| div.hasAttribute('panoramio_id')*/){ // есть графический материал
 		div.className = 'div-p ' + div.className;
-		div.style.overflowX = 'auto'; /* if (div.hasAttribute('panoramio_id'))  Если есть ссылка на номер фотографии из Панорамио _img_panoramio_id (div.getAttribute('panoramio_id'), div); */
+		div.style.overflowX = 'auto';
 		// Разбор секций картинок
 		var req = {
 		i_gr: i_gr,
@@ -350,7 +350,7 @@ geoAlbum.prototype.sync_geoMatrix = function (){
 		var Geo = geoAlb_lib.avgGeoDivs(this.geoDivs[i_gr].imageGeoDivs);
 		this.geoDivs[i_gr].Geo = Geo;
 		var Mark = Number(i_gr) + 1;
-		var MarkL = L.letterMarker(Geo, Mark);
+		var MarkL = L.letterMarker(Geo, Mark, 'passiveGroup');
 		if (typeof this.text_Gr == 'function') {
 			var text = this.text_Gr(this.geoDivs[i_gr].div);
 			if (text)
@@ -552,11 +552,11 @@ geoAlbum.prototype.focusGroup = function (i_gr, signal = true){
 		}
 	var geoDiv0 = this.geoDivs[i];
 	if (geoDiv0 && ! geoDiv0.NaNGeo()){
-		geoDiv0.Layer.setColor(this.options.passiveGroupColor ? this.options.passiveGroupColor : 'black');
+		geoDiv0.Layer.setGeoStatus('passiveGroup'); //setColor(this.options.passiveGroupColor ? this.options.passiveGroupColor : 'black');
 		}
 	var geoDiv1 = this.geoDivs[i_gr];
 	if (geoDiv1 && ! geoDiv1.NaNGeo()){
-		geoDiv1.Layer.setColor(this.options.activeGroupColor ? this.options.activeGroupColor : 'blue');
+		geoDiv1.Layer.setGeoStatus('activeGroup');//.setColor(this.options.activeGroupColor ? this.options.activeGroupColor : 'blue');
 		this.groupMap.map.panTo(geoDiv1.Geo);
 		}
 	this.content.replaceChild(this.geoDivs[i_gr].div, this.content.firstChild);
@@ -615,11 +615,11 @@ geoAlbum.prototype.focusImage = function (i_gr, i_im, signal = true){
 		return;
 	}
 	for (var im in this.geoDivs[i_gr].imageGeoDivs){
-		this.geoDivs[i_gr].imageGeoDivs[im].Layer.setColor(this.options.passiveImageColor ? this.options.passiveImageColor : 'black');
+		this.geoDivs[i_gr].imageGeoDivs[im].Layer.setGeoStatus('passiveImage');//.setColor(this.options.passiveImageColor ? this.options.passiveImageColor : 'black');
 	}
 
 	this.imageMap.map.panTo(Gr.imageGeoDivs[i_im].Geo);
-	this.geoDivs[i_gr].imageGeoDivs[i_im].Layer.setColor(this.options.activeImageColor ? this.options.activeImageColor : 'red');
+	this.geoDivs[i_gr].imageGeoDivs[i_im].Layer.setGeoStatus('activeImage');//.setColor(this.options.activeImageColor ? this.options.activeImageColor : 'red');
 	if (signal) {
 		this.signal(i_gr, i_im);
 	}
@@ -665,7 +665,7 @@ geoAlbum.prototype.includeMatrixElement = function (xhr){
 		elDiv.Geo = geoAlb_lib.OSM_node_avg(xml);
 	}
 	var Geo = elDiv.Geo;
-	var nLay = L.letterMarker(Geo, req.letter)
+	var nLay = L.letterMarker(Geo, req.letter, 'passiveImage')
 	nLay.options.req = req;
 	elDiv.Layer = nLay;
 	this.imgGeoLayer(nLay, req.letter + (name ? (" ⇒ " + name): ""))
@@ -702,9 +702,10 @@ L.LetterMarker = L.Marker.extend({
 		icon: new L.DivIcon({popupAnchor: [2, -2]})
 	},
 
-	initialize: function( latlng, letter, options ){
+	initialize: function( latlng, letter, geostatus, options ){
 		L.Marker.prototype.initialize.call(this, latlng, options);
 		this.options.letter = letter;
+		this.options.geostatus = geostatus;
 	},
 
 	_initIcon: function(){
@@ -717,19 +718,8 @@ L.LetterMarker = L.Marker.extend({
 			var div = document.createElement('div');
 			div.innerHTML = '' + options.letter + '';
 			div.className = 'leaflet-marker-icon';
-			div.style.marginLeft = '-7px';
-			div.style.marginTop= '-7px';
-			div.style.width = '15px';
-			div.style.height	= '15px';
-			div.style.borderRadius = '7px';
-			div.style.fontSize	= '10px';
-			div.style.fontFamily = 'sans-serif';
-			div.style.fontWeight = 'bold';
-			div.style.textAlign= 'center';
-			div.style.lineHeight = '15px';
-			div.style.cursor	= options.clickable ? 'hand' : 'default';
-			div.style.color = options.textColor ? options.textColor : 'white';
-			div.style.backgroundColor = options.color;
+			div.setAttribute('geo', '1');
+			div.setAttribute('geostatus', options.geostatus);
 			this._icon = div;
 
 			if (options.title){
@@ -751,12 +741,16 @@ L.LetterMarker = L.Marker.extend({
 		panes.markerPane.appendChild(this._icon);
 	},
 
-	setColor: function( color ){
+	setColor: function(color){
 		if( !this._icon )
 			this.options.color = color;
 		else
 			this._icon.style.backgroundColor = color;
-	}
+	},
+	setGeoStatus: function(status){
+		if( this._icon )
+			this._icon.setAttribute('geostatus', status);
+	},
 });
 /**
 * Класс специализированных меток в кружочке
@@ -765,8 +759,8 @@ L.LetterMarker = L.Marker.extend({
 * @param {string} letter - Знак.
 * @param {object} options - настройки
 */
-L.letterMarker = function(latlng, letter, options){
-	return new L.LetterMarker(latlng, letter, options);
+L.letterMarker = function(latlng, letter, geostatus, options){
+	return new L.LetterMarker(latlng, letter, geostatus, options);
 }
 
 /**
