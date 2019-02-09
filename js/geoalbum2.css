@@ -89,28 +89,33 @@ div[name="overviewmap"] {
     margin-bottom: 0;
 }
 
-.div-p {
-    margin: 1em 0;
-	text-align: justify;
+div[geo="1"] {
+	margin-left: -7px;
+	margin-top:  -7px;
+	width: 15px;
+	height: 15px;
+	border-radius: 7px;
+	font-size: 10px;
+	font-family: sans-serif;
+	font-weight: bold;
+	text-align: center;
+	line-height: 15px;
+	background-color: black;
+	color : white;
 }
 
-.photo {
-	display: block;
-	border: 2px #00d solid;
-    max-width: 99%;
-    max-height: 99%;
+div[geostatus="activeGroup"] {	
+	background-color: blue;
 }
 
-.h_foto {
-	display: block;
-	border: 2px #00d solid;
-    max-width: 99%;
-    max-height: 99%;
+div[geostatus="passiveGroup"] {	
+	background-color: black;
 }
 
-.v_foto {
-	display: block;
-	border: 2px #00d solid;
-    max-width: 99%;
-    max-height: 99%;
+div[geostatus="activeImage"] {	
+	background-color: red;
+}
+
+div[geostatus="passiveImage"] {
+	color: yellow;
 }
