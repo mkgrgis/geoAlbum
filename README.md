@@ -22,4 +22,4 @@ From div with coordinates or OSM codes
 
 to 
 
-<img>https://raw.githubusercontent.com/mkgrgis/geoAlbum/master/Demo.png</img>
+<img src="https://raw.githubusercontent.com/mkgrgis/geoAlbum/master/Demo.png"/>
