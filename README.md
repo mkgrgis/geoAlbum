@@ -3,6 +3,7 @@ geographical almum modificate HTML with coordinates to indicate maps
 
 From div with coordinates or OSM codes
 
+<pre>
 <div>
 	<h1>Павильон Александра I</h1>
 	<p>Он же чайный павильон или утренний павильон</p>
@@ -19,6 +20,7 @@ From div with coordinates or OSM codes
 	<p>Парадный фасад ротонды</p>
 <div lat="57.42412502432083" lon="27.0682"><a href="http://www.aluksnespils.lv/uploads/page_image/bigImage-jpg/c82dc2e556444d536edd7d88f33a4733_253ddf53f00b0ad0a4e7d983bbd30a35.jpg"><img height="500px" src="http://www.aluksnespils.lv/uploads/page_image/bigImage-jpg/c82dc2e556444d536edd7d88f33a4733_253ddf53f00b0ad0a4e7d983bbd30a35.jpg"></a></div>
 .....
+</pre>
 
 to 
 
