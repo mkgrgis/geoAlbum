@@ -1,0 +1,84 @@
+<!DOCTYPE html><html>
+<head>
+<title>geoExif demo</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<link href="js/geoalbum.css" rel="stylesheet" type="text/css">
+<style>.history { margin: 4px 0 1em 2em; padding: 3px; float: right; background: #eee; }</style>
+	<link rel="stylesheet" href="js/leaflet.css" />
+	<script src="js/leaflet.js"></script>
+	<script src="js/leaflet-providers.js"></script>
+	<script src="js/osmtogeojson.js"></script>
+	<script src="js/gpx.js"></script>
+	<script src="js/geoalbum.js"></script>
+	<script src="js/exif.js"></script>
+</head>
+<body>
+<h1>Проверочная страница geoEXIF</h1>
+<h3>Это демонстрация возможностей открытой и свободной <a href="https://github.com/mkgrgis/geoAlbum">программы "Географический альбом"</a>, размещённой по адресу <a href="https://github.com/mkgrgis/geoAlbum">https://github.com/mkgrgis/geoAlbum</a></h3>	
+<div id="geoAlbum" groupMapZoom='{"ini" : "14", "min" : "1", "max" : "15" }' imageMapZoom='{"ini" : "4", "min" : "4", "max" : "20" }'>
+
+<div>
+	<h1>div 0</h1>
+	<p>Вид со внутренней дорожки на залив</p>
+	<div><a href="demo/iguana.jpg"><img src="demo/iguana.jpg"></a></div>
+	<p>1914 г.</p>
+	<div><a href="demo/dolfin_show.jpg"><img width="400px" src="demo/dolfin_show.jpg"></a></div>
+</div>
+
+<div>
+	<h1>div 1</h1>
+	<div><a href="demo/vondelpark.jpg"><img src="demo/vondelpark.jpg"></a></div>
+	<div angle="nw"><a href="demo/meerkat.jpg"><img src="demo/meerkat.jpg"></a></div>
+	
+</div>
+
+<div>
+	<h1>div 2</h1>
+	<p>Он же чайный павильон или утренний павильон</p>
+	<p>Вид с озера</p>
+	<div osm_nd_id="2053478903" angle="nw"><a href="demo/cow.jpg"><img src="demo/cow.jpg"></a></div>	
+</div>
+
+</div>
+<script language="javascript">	
+	div = document.getElementById('geoAlbum');
+	document.getElementById('geoAlbum').GA = new geoAlbum(div, {
+		groupMapZ: JSON.parse( div.getAttribute('groupMapZoom')),
+		imageMapZ: JSON.parse( div.getAttribute('imageMapZoom')),	
+		functionImgH : function (div) {
+			var n = div.previousElementSibling;
+			return n.textContent;
+			},
+		functionGrH : function (div) {
+			var n = div.getElementsByTagName('h1')[0];
+			return n.textContent;
+			},
+		imageMapProvider : ['Esri.WorldImagery', 'OpenTopoMap', 'OpenStreetMap.Mapnik'],
+		imageMapName : ['Снимки от Esri', 'Топографическая карта', 'ОСМ/Мапник'],
+		exif_geo: true,
+		contur: {
+			osm_relation_id : 1124039,
+			title : "Монако",
+			color : "#F2872F",
+			subAreas : false,
+			subAreasColor: "#99CF19"
+			},
+		route_style : {color: '#80ffff', opacity: 0.5},
+		locale : {
+			prevText : '&larr; Предыдущее',
+			nextText : 'Следующее &rarr;',
+			imIndices : 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЫ'
+			}
+		}
+		);	 
+	document.onkeydown = function (e) {
+		var GA = document.getElementById('album1').GA;
+		if (e.which == 39)
+			GA.focusGroup(GA.geoDivIdx + 1);
+		if (e.which == 37)
+			GA.focusGroup(GA.geoDivIdx - 1);
+		// location.hash = GA.geoDivIdx+1;
+	}
+</script>
+</body>
+</html>
