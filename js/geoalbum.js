@@ -831,7 +831,7 @@ geoAlb_lib.deconstructHash = function (hash) {
 	return { name: name, i_gr: i_gr, code_im: code_im };
 }
 
-// Асинхронное получение XML
+// Асинхронное получение файла
 geoAlb_lib.OSM_layer_request = function (req_par, GA) {
 	var i = geoAlb_lib.osm_type.indexOf(req_par.type);
 	var url = geoAlb_lib.OSM_URL(req_par.type, req_par.id, geoAlb_lib.osm_suff[i]);
@@ -843,7 +843,7 @@ geoAlb_lib.OSM_layer_request = function (req_par, GA) {
 	xhr.send();
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState != 4) return;
-		if (xhr.status != 200) {
+		if (xhr.status != 200 && (xhr.status != 0 || xhr.response) {
 			console.warn("Такого объекта нет в БД OSM! " + xhr.req_par.id + " " + xhr.req_par.type + " " + xhr.url);
 		} else
 			xhr.GA.OSM_layer_include(xhr);
@@ -856,14 +856,13 @@ geoAlb_lib.JSON_request = function (req_par, GA, url, callback) {
 	xhr.GA = GA;
 	xhr.open('GET', url, true);
 	xhr.responseType = 'json';
-	xhr.onload = function () {
-		var status = xhr.status;
-		if (status === 200) {
+	xhr.onreadystatechange = function () {
+		if (xhr.readyState != 4) return;
+		if (xhr.status != 200 && (xhr.status != 0 || xhr.response) {
 			callback(null, xhr.response);
-		} else {
-			callback(status, xhr.response);
-		}
-	};
+		} else
+			callback(xhr.status, xhr.response);
+	};	
 	xhr.send();
 };
 
