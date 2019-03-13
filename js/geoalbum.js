@@ -850,22 +850,6 @@ geoAlb_lib.OSM_layer_request = function (req_par, GA) {
 	}
 }
 
-geoAlb_lib.JSON_request = function (req_par, GA, url, callback) {
-	var xhr = new XMLHttpRequest();
-	xhr.req_par = req_par;
-	xhr.GA = GA;
-	xhr.open('GET', url, true);
-	xhr.responseType = 'json';
-	xhr.onreadystatechange = function () {
-		if (xhr.readyState != 4) return;
-		if (xhr.status != 200 && (xhr.status != 0 || xhr.response) {
-			callback(null, xhr.response);
-		} else
-			callback(xhr.status, xhr.response);
-	};	
-	xhr.send();
-};
-
 // Выбирает широту и долготу из XML узла единстственной точки в формате OSM
 geoAlb_lib.OSM_node_lonlat = function (OSM_node) {
 	return [parseFloat(OSM_node.getAttribute('lat')), parseFloat(OSM_node.getAttribute('lon'))];
