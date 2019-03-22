@@ -228,7 +228,7 @@ geoAlbum.prototype.navEl = function (type, cl, text, i_gr) {
 	return nav;
 }
 
-geoAlbum.prototype.processGroupDiv = function (div, i_gr) {	// Добавляются впрёд - назад сссылки
+geoAlbum.prototype.processGroupDiv = function (div, i_gr) {	// Добавляются вперёд - назад сссылки
 	var a = document.createElement('a');
 	a.href = '#' + this.rootDiv.id + "-" + Number(i_gr + 1);
 	div.insertBefore(a, div.firstChild);
@@ -263,6 +263,10 @@ geoAlbum.prototype.LonLatGeoLayer = function (i_gr, i_im, geoPoint, req) {
 	matrixEl.Layer = lt;
 }
 
+geoAlbum.prototype.indexImg = function (i_im) {
+	return (typeof this.locale.imIndices[i_im] != 'undefined') ? this.locale.imIndices[i_im] : i_im;
+}
+
 geoAlbum.prototype.processImageDiv = function (div, i_im) {
 	var i_gr = this.geoDivs.length - 1;
 	this.geoDivs[i_gr].imageGeoDivs.push(new geoDiv(div, false));
@@ -275,7 +279,7 @@ geoAlbum.prototype.processImageDiv = function (div, i_im) {
 			i_gr: i_gr,
 			i_im: n_im,
 			div: div,
-			letter: this.locale.imIndices[i_im]
+			letter: this.indexImg(i_im)
 		};
 
 		this.markDiv(req);
@@ -456,10 +460,10 @@ geoAlbum.hashChange = function () {
 	for (i_GA in geoAlbum.__hash_register.GA) {
 		if (ho.name == geoAlbum.__hash_register.name[i_GA]) {
 			var i_gr = ho.i_gr - 1;
-			var i_im = geoAlbum.__hash_register.GA[i_GA].locale.imIndices.indexOf(ho.code_im);
 			var GA = geoAlbum.__hash_register.GA[i_GA];
+			var i_im = GA.indexImg(ho.code_im);
 			if (!GA.block) {
-				GA.focusImage(i_gr, i_im, false);
+				GA.focusImage(i_gr, i_im, true);
 				if (i_im >= 0)
 					GA.scrollImage(i_gr, i_im);
 			} else
@@ -469,7 +473,6 @@ geoAlbum.hashChange = function () {
 	}
 	return false;
 }
-
 // Установка обзорной карты
 geoAlbum.prototype.sync_groupMap = function () {
 	if (!(this.ok_geoMatrix() && this.ok_main_rel()))
@@ -586,11 +589,11 @@ geoAlbum.prototype.focusGroup = function (i_gr, signal = true) {
 	}
 	var geoDiv0 = this.geoDivs[i];
 	if (geoDiv0 && !geoDiv0.NaNGeo()) {
-		geoDiv0.Layer.setGeoStatus('passiveGroup'); //setColor(this.options.passiveGroupColor ? this.options.passiveGroupColor : 'black');
+		geoDiv0.Layer.setGeoStatus('passiveGroup');
 	}
 	var geoDiv1 = this.geoDivs[i_gr];
 	if (geoDiv1 && !geoDiv1.NaNGeo()) {
-		geoDiv1.Layer.setGeoStatus('activeGroup');//.setColor(this.options.activeGroupColor ? this.options.activeGroupColor : 'blue');
+		geoDiv1.Layer.setGeoStatus('activeGroup');
 		this.groupMap.map.panTo(geoDiv1.Geo);
 	}
 	this.content.replaceChild(this.geoDivs[i_gr].div, this.content.firstChild);
@@ -645,7 +648,7 @@ geoAlbum.prototype.focusImage = function (i_gr, i_im, signal = true) {
 		return;
 	var Gr = this.geoDivs[i_gr];
 	if (typeof Gr.imageGeoDivs == 'undefined' || i_im > Gr.imageGeoDivs.length - 1) {
-		alert("Индекс иллюстрации " + this.locale.imIndices[i_im] + " вне пределов группы № " + i_gr + " в " + this.rootDiv.id + " !");
+		alert("Индекс иллюстрации " + this.indexImg(i_im) + " вне пределов группы № " + i_gr + " в " + this.rootDiv.id + " !");
 		return;
 	}
 	for (var im in this.geoDivs[i_gr].imageGeoDivs) {
@@ -719,7 +722,7 @@ geoAlbum.prototype.includeMatrixElement = function (xhr) {
 
 // Смена фокуса
 geoAlbum.prototype.signal = function (i_gr, i_im) {
-	var add = ((i_im) ? ("-" + this.locale.imIndices[i_im]) : "");
+	var add = ((i_im) ? ("-" + this.indexImg(i_im)) : "");
 	location.hash = "#" + encodeURI(this.rootDiv.id + "-" + (i_gr + 1) + add);
 	//  alert (location.hash);
 }
@@ -843,7 +846,7 @@ geoAlb_lib.OSM_layer_request = function (req_par, GA) {
 	xhr.send();
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState != 4) return;
-		if (xhr.status != 200 && (xhr.status != 0 || xhr.response) {
+		if (xhr.status != 200 && (xhr.status != 0 || xhr.response)) {
 			console.warn("Такого объекта нет в БД OSM! " + xhr.req_par.id + " " + xhr.req_par.type + " " + xhr.url);
 		} else
 			xhr.GA.OSM_layer_include(xhr);
