@@ -550,13 +550,15 @@ geoAlbum.prototype.sync_imageMap = function () {
 geoAlbum.prototype.mainRelationOk = function (xhr) {
 	var main_rl_xml = xhr.responseXML;
 	var id = xhr.req_par.id;
-	var gj = geoAlb_lib.osmRelationGeoJson(main_rl_xml, id);
-	this.geoStructureArea.main_rel_layer = L.geoJSON(gj);
-	this.geoStructureArea.main_rel_layer.xml = main_rl_xml;
-	this.geoStructureArea.subAreas.xml_gr = [];
-	var title = this.geoStructureArea.main_rel_title ? this.geoStructureArea.main_rel_title : geoAlb_lib.getOsmTag(main_rl_xml, 'relation', this.geoStructureArea.main_rel_layer.osm_rel_id, 'name');
-	this.geoStructureArea.main_rel_layer.bindPopup(title);
-	this.geoStructureArea.main_rel_layer.setStyle(this.geoStructureArea.main_rel_style);
+	var gsa = this.geoStructureArea;
+	gsa.main_rel_geojson = geoAlb_lib.osmRelationGeoJson(main_rl_xml, id);
+	gsa.main_rel_layer = L.geoJSON(gsa.main_rel_geojson);
+	gsa.main_rel_layer.xml = main_rl_xml;
+	gsa.subAreas.xml_gr = [];
+	gsa.subAreas.geoJSON_gr = [];
+	var title = gsa.main_rel_title ? gsa.main_rel_title : geoAlb_lib.getOsmTag(main_rl_xml, 'relation', gsa.main_rel_layer.osm_rel_id, 'name');
+	gsa.main_rel_layer.bindPopup(title);
+	gsa.main_rel_layer.setStyle(gsa.main_rel_style);
 	this.sync_groupMap();
 	this.sync_imageMap();
 };
@@ -575,6 +577,7 @@ geoAlbum.prototype.subAreaRelationOk = function (xhr) {
 	sa_Layer.setStyle(gss.style);
 	gss.Layers.addLayer(sa_Layer);
 	gss.xml_gr.push(sa_xml);
+	gss.geoJSON_gr.push(saGeoJson);
 	gss.sA_req_i--;
 	if (gss.sA_req_i == 0)
 		this.sync_imageMap();
