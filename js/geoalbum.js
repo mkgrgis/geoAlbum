@@ -542,6 +542,8 @@ geoAlbum.prototype.sync_imageMap = function () {
 	}
 	this.focusGroup(0, false);
 	geoAlbum.hashChange();
+	if (typeof (this.options.final) == 'function')
+		this.options.final();
 }
 
 // При завершении загрузки главного контура
@@ -551,6 +553,7 @@ geoAlbum.prototype.mainRelationOk = function (xhr) {
 	var gj = geoAlb_lib.osmRelationGeoJson(main_rl_xml, id);
 	this.geoStructureArea.main_rel_layer = L.geoJSON(gj);
 	this.geoStructureArea.main_rel_layer.xml = main_rl_xml;
+	this.geoStructureArea.subAreas.xml_gr = [];
 	var title = this.geoStructureArea.main_rel_title ? this.geoStructureArea.main_rel_title : geoAlb_lib.getOsmTag(main_rl_xml, 'relation', this.geoStructureArea.main_rel_layer.osm_rel_id, 'name');
 	this.geoStructureArea.main_rel_layer.bindPopup(title);
 	this.geoStructureArea.main_rel_layer.setStyle(this.geoStructureArea.main_rel_style);
@@ -568,10 +571,12 @@ geoAlbum.prototype.subAreaRelationOk = function (xhr) {
 	if (!sa_name)
 		sa_name = geoAlb_lib.getOsmTag(sa_xml, 'relation', saGeoJson.osm_rel_id, 'description');
 	sa_Layer.bindPopup(sa_name);
-	sa_Layer.setStyle(this.geoStructureArea.subAreas.style);
-	this.geoStructureArea.subAreas.Layers.addLayer(sa_Layer);
-	this.geoStructureArea.subAreas.sA_req_i--;
-	if (this.geoStructureArea.subAreas.sA_req_i == 0)
+	var gss = this.geoStructureArea.subAreas;
+	sa_Layer.setStyle(gss.style);
+	gss.Layers.addLayer(sa_Layer);
+	gss.xml_gr.push(sa_xml);
+	gss.sA_req_i--;
+	if (gss.sA_req_i == 0)
 		this.sync_imageMap();
 };
 
