@@ -548,8 +548,8 @@ geoAlbum.prototype.sync_imageMap = function () {
 	}
 	this.focusGroup(0, false);
 	geoAlbum.hashChange();
-	if (typeof (this.options.final) == 'function')
-		this.options.final();
+	if (typeof (this.options.functionFinal) == 'function')
+		this.options.functionFinal();
 }
 
 // При завершении загрузки главного контура
