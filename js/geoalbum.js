@@ -510,8 +510,7 @@ geoAlbum.prototype.req_SubAreas = function (rel_data){
 			level: rel_data.level + 1,
 			id: osm_rl_id[i],
 			id_rel_req : rel_data.id
-		};
-		console.log(JSON.stringify(req));
+		}; // console.table(req);
 		geoAlb_lib.OSM_layer_request(req, this);
 	}
 }
