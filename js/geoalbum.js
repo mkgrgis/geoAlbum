@@ -587,7 +587,7 @@ geoAlbum.prototype.subAreaRelationOk = function (data) {
 		gss.Layers[data.level] = L.layerGroup();
 	gss.Layers[data.level].addLayer(data.layer);
 	gss.data.push(data);
-	if (gss.level_max >= data.level)
+	if (gss.level_max > data.level)
 		this.req_SubAreas(data);
 	gss.n_req--;
 	if (gss.n_req == 0)
