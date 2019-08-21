@@ -549,7 +549,7 @@ geoAlbum.prototype.sync_imageMap = function () {
 	this.focusGroup(0, false);
 	geoAlbum.hashChange();
 	if (typeof (this.options.functionFinal) == 'function')
-		this.options.functionFinal();
+		this.options.functionFinal(this);
 }
 
 // При завершении загрузки главного контура
