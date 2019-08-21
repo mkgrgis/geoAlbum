@@ -112,12 +112,16 @@ function geoAlbum(geoAlbum_div, options) {
 			},
 			main_rel_title: c.title ? c.title : "Основной контур",
 			main_rel: {
-				id: c.osm_relation_id
+				id: c.osm_relation_id,
+				level: 0,
+				mainRel: true,
+				type: 'relation'
 			},
 			subAreas: {
 				// Элементы границ внутренних территорий
-				Layers: L.layerGroup(),
-				sA_req_i: 0,
+				level_max: c.subAreasLevelMax ? c.subAreasLevelMax : 3,
+				Layers: [],
+				n_req: 0,
 				style: {
 					color: c.subAreasColor ? c.subAreasColor : '#AA0000',
 					weight: 2,
@@ -361,7 +365,7 @@ geoAlbum.prototype.ok_main_rel = function () {
 	return (!this.OSM_rel_data.main_rel.id) || (this.OSM_rel_data.main_rel.id && this.OSM_rel_data.main_rel.layer);
 }
 geoAlbum.prototype.ok_subAreas = function () {
-	return (!this.options.contur) ? true : ((!this.options.contur.subAreas) || (this.options.contur.subAreas && this.OSM_rel_data.subAreas.sA_req_i == 0));
+	return (!this.options.contur) ? true : ((!this.options.contur.subAreas) || (this.options.contur.subAreas && this.OSM_rel_data.subAreas.n_req == 0));
 }
 geoAlbum.prototype.ok_geoMatrix = function () {
 	return (this.OSM_req_i == 0 && this.EXIF_req_i == 0);
@@ -438,11 +442,7 @@ geoAlbum.prototype.sync_geoMatrix = function () {
 
 	// Отображаем на обзорную карту главный объект - обычно это отношение границ покрываемой области.
 	if (this.OSM_rel_data.main_rel.id)
-		geoAlb_lib.OSM_layer_request({
-			mainRel: true,
-			type: 'relation',
-			id: this.OSM_rel_data.main_rel.id
-		}, this);
+		geoAlb_lib.OSM_layer_request(this.OSM_rel_data.main_rel, this);
 
 	if (geoAlbum.__hash_register.name.length == 0) {
 		window.addEventListener('hashchange', function (event) {
@@ -481,10 +481,11 @@ geoAlbum.prototype.sync_groupMap = function () {
 	if (!(this.ok_geoMatrix() && this.ok_main_rel()))
 		return;
 	var OSMrd = this.OSM_rel_data;
-	if (OSMrd.main_rel.id && OSMrd.main_rel.layer) {
+	var mr = OSMrd.main_rel;
+	if (mr.id && mr.layer) {
 		this.groupMap.Control = new L.Control.Layers();
-		this.groupMap.map.addLayer(OSMrd.main_rel.layer);
-		this.groupMap.Control.addOverlay(OSMrd.main_rel.layer, OSMrd.main_rel_title);
+		this.groupMap.map.addLayer(mr.layer);
+		this.groupMap.Control.addOverlay(mr.layer, OSMrd.main_rel_title);
 	}
 	for (var i_gr in this.geoDivs) {
 		if (!this.geoDivs[i_gr].NaNGeo())
@@ -492,29 +493,33 @@ geoAlbum.prototype.sync_groupMap = function () {
 	}
 
 	// Заказ контуров подотношений
-	if (this.options && this.options.contur && this.options.contur.subAreas) {
-		var osm_rl_id = geoAlb_lib.getSubAreas(OSMrd.main_rel.xml, OSMrd.main_rel.id);
-		for (var i = 0; i < osm_rl_id.length; i++) {
-			OSMrd.subAreas.sA_req_i++;
-			geoAlb_lib.OSM_layer_request({
-				subArea: true,
-				type: 'relation',
-				sA_layer: 1,
-				id: osm_rl_id[i],
-				id_rel_req : OSMrd.main_rel.id
-			},
-				this);
-		}
-	}
+	if (this.options && this.options.contur && this.options.contur.subAreas)
+		this.req_SubAreas(mr, 1);
 	this.groupMap.map.addControl(this.groupMap.Control);
-	this.groupMap.map.addLayer(OSMrd.main_rel.layer);
+	this.groupMap.map.addLayer(mr.layer);
+}
+
+// Запрос на выдачу всех подчинённых отношений к данному
+geoAlbum.prototype.req_SubAreas = function (rel_data){
+	var osm_rl_id = geoAlb_lib.getSubAreas(rel_data.xml, rel_data.id);
+	for (var i = 0; i < osm_rl_id.length; i++) {
+		this.OSM_rel_data.subAreas.n_req++;
+		var req = {
+			subArea: true,
+			type: 'relation',
+			level: rel_data.level + 1,
+			id: osm_rl_id[i],
+			id_rel_req : rel_data.id
+		};
+		console.log(JSON.stringify(req));
+		geoAlb_lib.OSM_layer_request(req, this);
+	}
 }
 
 // Установка местной карты
 geoAlbum.prototype.sync_imageMap = function () {
 	if (!(this.ok_geoMatrix() && this.ok_main_rel() && this.ok_subAreas()))
 		return;
-
 	var dm = this.rootDiv.querySelector("[name=detailmap]")
 	var ms = new Date().getTime();
 	dm.setAttribute('id', 'dm' + ms);
@@ -535,8 +540,11 @@ geoAlbum.prototype.sync_imageMap = function () {
 		this.imageMap.Control.addOverlay(gJs, OSMrd.main_rel_title);
 		this.imageMap.map.addLayer(gJs);
 		if (this.options && this.options.contur && this.options.contur.subAreas) {
-			this.imageMap.Control.addOverlay(OSMrd.subAreas.Layers, OSMrd.main_rel_title + ': устройство');
-			this.imageMap.map.addLayer(OSMrd.subAreas.Layers);
+			for (var l in OSMrd.subAreas.Layers)
+			{
+				this.imageMap.Control.addOverlay(OSMrd.subAreas.Layers[l], OSMrd.main_rel_title + ': устройство (' + l +')');
+				this.imageMap.map.addLayer(OSMrd.subAreas.Layers[l]);
+			}
 		}
 	}
 
@@ -553,38 +561,36 @@ geoAlbum.prototype.sync_imageMap = function () {
 }
 
 // При завершении загрузки главного контура
-geoAlbum.prototype.mainRelationOk = function (xhr) {
-	var OSMrd = this.OSM_rel_data;
-	var mr = OSMrd.main_rel;
-	mr.xml = xhr.responseXML;
-	mr.id = xhr.req_par.id;
-	mr.geoJSON = geoAlb_lib.osmRelationGeoJson(mr.xml, mr.id);
-	mr.layer = L.geoJSON(mr.geoJSON);	
-	var title = OSMrd.main_rel_title ? OSMrd.main_rel_title : geoAlb_lib.getOsmTag(mr.xml, 'relation', mr.id, 'name');
+geoAlbum.prototype.mainRelationOk = function (data) {
+	var mr = this.OSM_rel_data.main_rel;
+	for (var i in data)
+	{
+		mr[i] = data[i];
+	}	
+	var ot = this.OSM_rel_data.main_rel_title;
+	var title = ot ? ot : geoAlb_lib.getOsmTag(mr.xml, 'relation', mr.id, 'name');
 	mr.layer.bindPopup(title);
-	mr.layer.setStyle(OSMrd.main_rel_style);
+	mr.layer.setStyle(this.OSM_rel_data.main_rel_style);
 	this.sync_groupMap();
 	this.sync_imageMap();
 };
 
 // При завершении загрузки подчинённого контура
-geoAlbum.prototype.subAreaRelationOk = function (xhr) {
-	var data_el = {
-		xml : xhr.responseXML,
-		id: xhr.req_par.id
-	};
-	data_el.geoJSON = geoAlb_lib.osmRelationGeoJson(data_el.xml, data_el.id);
-	data_el.layer = L.geoJSON(data_el.geoJSON);
-	var sa_name = geoAlb_lib.getOsmTag(data_el.xml, 'relation', data_el.geoJSON.osm_rel_id, 'name');
+geoAlbum.prototype.subAreaRelationOk = function (data) {	
+	var sa_name = geoAlb_lib.getOsmTag(data.xml, 'relation', data.id, 'name');
 	if (!sa_name)
-		sa_name = geoAlb_lib.getOsmTag(data_el.xml, 'relation', data_el.geoJSON.osm_rel_id, 'description');
-	data_el.layer.bindPopup(sa_name);
+		sa_name = geoAlb_lib.getOsmTag(data.xml, 'relation', data.id, 'description');
+	data.layer.bindPopup(sa_name);
 	var gss = this.OSM_rel_data.subAreas;
-	data_el.layer.setStyle(gss.style);
-	gss.Layers.addLayer(data_el.layer);
-	gss.data.push(data_el);
-	gss.sA_req_i--;
-	if (gss.sA_req_i == 0)
+	data.layer.setStyle(gss.style);
+	if (! gss.Layers[data.level])
+		gss.Layers[data.level] = L.layerGroup();
+	gss.Layers[data.level].addLayer(data.layer);
+	gss.data.push(data);
+	if (gss.level_max >= data.level)
+		this.req_SubAreas(data);
+	gss.n_req--;
+	if (gss.n_req == 0)
 		this.sync_imageMap();
 };
 
@@ -694,20 +700,27 @@ geoAlbum.prototype.imgGeoLayer = function (layer, popup) {
 	layer.options.GA = this;
 }
 
-geoAlbum.prototype.OSM_layer_include = function (xhr) {
-	var req = xhr.req_par;
-	if (req.mainRel) {
-		this.mainRelationOk(xhr);
-	} else if (req.subArea) {
-		this.subAreaRelationOk(xhr);
+geoAlbum.prototype.OSM_layer_include = function (xhr) {	
+	var data = xhr.req_par;
+	data.xml = xhr.responseXML;
+	data.xhr = xhr;	
+	if (data.mainRel || data.subArea)
+	{			
+		data.geoJSON = geoAlb_lib.osmRelationGeoJson(data.xml, data.id);
+		data.layer = L.geoJSON(data.geoJSON);
+	}
+	if (data.mainRel) {
+		this.mainRelationOk(data);
+	} else if (data.subArea) {
+		this.subAreaRelationOk(data);
 	} else
-		this.includeMatrixElement(xhr);
+		this.includeMatrixElement(data);
 }
 
 // Добавление асинхронно полученного слоя для географических координат иллюстрации
-geoAlbum.prototype.includeMatrixElement = function (xhr) {
-	var xml = xhr.responseXML;
-	var req = xhr.req_par;
+geoAlbum.prototype.includeMatrixElement = function (data) {
+	var xml = data.xml;
+	var req = data.xhr.req_par;
 	geoAlb_lib.OSM_href(req.div, req.id, req.type);
 	var elDiv = this.geoDivs[req.i_gr].imageGeoDivs[req.i_im];
 	var name = geoAlb_lib.getOsmTag(xml, req.type, req.id, 'name');
