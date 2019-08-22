@@ -725,7 +725,7 @@ geoAlbum.prototype.includeMatrixElement = function (data) {
 	var name = geoAlb_lib.getOsmTag(xml, req.type, req.id, 'name');
 	name = name ? name : geoAlb_lib.getOsmTag(xml, req.type, req.id, 'ref');
 	if (req.type == "node") {
-		elDiv.Geo = geoAlb_lib.OSM_lonlat(req.id, xml);
+		elDiv.Geo = geoAlb_lib.OSM_node_geo(xml, req.id);
 	} else { // rel, way
 		var geoJson0 = osmtogeojson(xml);
 		var polyStyle = this.imagePolygonStyle;
@@ -879,7 +879,7 @@ geoAlb_lib.OSM_layer_request = function (req_par, GA) {
 }
 
 // Выбирает широту и долготу из XML узла единстственной точки в формате OSM
-geoAlb_lib.OSM_node_lonlat = function (OSM_node) {
+geoAlb_lib.OSM_xml_node_geo = function (OSM_node) {
 	return [parseFloat(OSM_node.getAttribute('lat')), parseFloat(OSM_node.getAttribute('lon'))];
 }
 
@@ -926,13 +926,19 @@ geoAlb_lib.OSM_node_avg = function (xml) {
 };
 
 // По коду точки в OSM возвращает объект с широтой и долготой.
-geoAlb_lib.OSM_lonlat = function (id, xml) {
+geoAlb_lib.OSM_node_geo = function (xml, id, latlon = true) {
 	var nodes = xml.getElementsByTagName('node');
+	var nd = {};
 	for (var i = 0; i < nodes.length; i++) {
 		if (nodes[i].getAttribute('id') == id)
 			nd = nodes[i];
 	}
-	return nd ? geoAlb_lib.OSM_node_lonlat(nd) : null;
+	if (!nd)
+		return null;
+	var osmg = geoAlb_lib.OSM_xml_node_geo(nd);
+	if (latlon)
+		return osmg;
+	return [osmg[1], osmg[0]];
 };
 
 // Удаляет точки из geoJSON отношения или линии
