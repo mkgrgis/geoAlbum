@@ -339,6 +339,8 @@ geoAlbum.prototype.processImageDiv = function (div, i_im) {
 					}
 					finally {
 						this.options.GA.EXIF_req_i--;
+						if (this.options.GA.EXIF_req_i == 0)
+							this.options.GA.sync_geoMatrix(); // Если собраны все точки
 					}
 				}
 			});
