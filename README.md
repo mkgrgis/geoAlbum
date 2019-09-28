@@ -1,6 +1,8 @@
 # geoAlbum
 geographical almum modificate HTML with coordinates to indicate maps
 
+<a href="Пейзажный парк в Алуксне.html"> Demo </a>
+
 To 
 <img src="https://raw.githubusercontent.com/mkgrgis/geoAlbum/master/Demo.png"/>
 
