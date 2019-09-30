@@ -263,12 +263,7 @@ geoAlbum.prototype.φλLayer = function (i_gr, i_im, φλ, req, φλ1) {
 	matrixEl.φλ = φλ;
 	var lt = L.letterMarker(φλ, req.letter, 'passiveImage');
 	if (φλ1){
-		var o = lt;
-		var pl = L.polyline([φλ, φλ1], {color:'#FF0000', width:2 });
-		lt = L.layerGroup();
-		lt.addLayer(pl);
-		lt.addLayer(o);
-		lt.setGeoStatus = o.setGeoStatus;
+		matrixEl.polyLayer = L.polyline([φλ, φλ1], {color:'#FF0000', width:2 });
 	}
 	var text = (typeof req.exif_obj == 'undefined') ? this.text_Im(matrixEl.div) : '';
 	this.imgφλLayer(lt, text);
