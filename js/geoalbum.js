@@ -4,17 +4,17 @@
 * Представляет карту, действующую в блоке
 * @constructor
 * @param {div} div - Блок для размещенеия карты.
-* @param {LonLat} centerGeo - Координаты центра карты.
+* @param {LonLat} center_φλ - Координаты центра карты.
 * @param {int} zoom - Условный масштаб.
 * @param {int} minZ - мимнимальный условный масштаб.
 * @param {int} maxZ - максимальный условный масштаб.
 * @param {bool} controls - включать ли преключатель своёв.
 */
-function mapDiv(div, centerGeo, provider, providerName, Z, controls) {
+function mapDiv(div, center_φλ, provider, providerName, Z, controls) {
 	this.div = div;
 	this.map = L.map(div.getAttribute('id'), { keyboard: false });
-	if (!isNaN(centerGeo[0]) && !isNaN(centerGeo[1]) && !isNaN(Z.ini))
-		this.map.setView(centerGeo, Z.ini);
+	if (!isNaN(center_φλ[0]) && !isNaN(center_φλ[1]) && !isNaN(Z.ini))
+		this.map.setView(center_φλ, Z.ini);
 	else
 		console.warn('map center ?');
 	if (Z) {
@@ -49,7 +49,7 @@ function mapDiv(div, centerGeo, provider, providerName, Z, controls) {
 */
 function geoDiv(div, children) {
 	this.div = div; // Блок гипертекста
-	this.Geo = [NaN, NaN]; // Координаты центра
+	this.φλ = [NaN, NaN]; // Координаты центра
 	this.Layer = null; // Графическое представление метки
 	if (children)
 		this.imageGeoDivs = [];
@@ -61,7 +61,7 @@ function geoDiv(div, children) {
 * Наличие верного географического соответствия
 */
 geoDiv.prototype.NaNGeo = function () {
-	return isNaN(this.Geo[0]) || isNaN(this.Geo[1]);
+	return isNaN(this.φλ[0]) || isNaN(this.φλ[1]);
 }
 
 /**
@@ -258,19 +258,73 @@ geoAlbum.prototype.processGroupDiv = function (div, i_gr) {	// Добавляю�
 	div.insertBefore(navt, div.firstChild);
 }
 
-geoAlbum.prototype.LonLatGeoLayer = function (i_gr, i_im, geoPoint, req) {
+geoAlbum.prototype.φλLayer = function (i_gr, i_im, φλ, req, φλ1) {
 	var matrixEl = this.geoDivs[i_gr].imageGeoDivs[i_im];
-	matrixEl.Geo = geoPoint;
-	var lt = L.letterMarker(geoPoint, req.letter, 'passiveImage');
+	matrixEl.φλ = φλ;
+	var lt = L.letterMarker(φλ, req.letter, 'passiveImage');
+	if (φλ1){
+		var o = lt;
+		var pl = L.polyline([φλ, φλ1], {color:'#FF0000', width:2 });
+		lt = L.layerGroup();
+
+/*L.polylineDecorator(exif_line, {
+				    patterns: [{
+			        	offset: 1, 
+						symbol: L.Symbol.arrowHead({
+							pixelSize: 8, 
+							polygon: false/*, 
+							pathOptions: {
+								stroke: true
+							}*
+						})
+					}]
+				});  */
+		lt.addLayer(pl);
+		lt.addLayer(o);
+		lt.setGeoStatus = o.setGeoStatus;
+	}
 	var text = this.text_Im(matrixEl.div);
 	if (text)
-		this.imgGeoLayer(lt, text);
+		this.imgφλLayer(lt, text);
 	lt.options.req = req;
 	matrixEl.Layer = lt;
 }
 
 geoAlbum.prototype.indexImg = function (i_im) {
 	return (typeof this.locale.imIndices[i_im] != 'undefined') ? this.locale.imIndices[i_im] : i_im;
+}
+
+geoAlbum.exif_ok = function (exif_obj) {
+	function dec(a, x) {
+		return (a[0] + a[1] / 60.0 + a[2] / 3600.0) * (( x == "W" || x == "S") ? -1 : 1);
+	}
+	var req = this.options.req;
+	var gA = this.options.GA;
+	var lit = '';
+	try {
+		if (typeof exif_obj.GPSLatitude != 'undefined' && typeof exif_obj.GPSLongitude != 'undefined') {
+			var φ = dec(exif_obj.GPSLatitude, exif_obj.GPSLatitudeRef);
+			var λ = dec(exif_obj.GPSLongitude, exif_obj.GPSLongitudeRef);
+			var φλ1 = null;
+			if (typeof exif_obj.GPSDestLatitude != 'undefined' && typeof exif_obj.GPSDestLongitude != 'undefined') {
+				var φ1 = dec(exif_obj.GPSDestLatitude, exif_obj.GPSDestLatitudeRef);
+				var λ1 = dec(exif_obj.GPSDestLongitude, exif_obj.GPSDestLongitudeRef);
+				φλ1 = [φ1, λ1];
+			}
+			gA.φλLayer(req.i_gr, req.i_im, [φ, λ], req, φλ1);
+		} else
+			lit = 'Z';
+	}
+	catch
+	{
+		lit = 'X';
+	}
+	finally {
+		gA.EXIF_req_i--;
+		console.log('exif: ' + lit + ' ' + req.i_gr + ' ' + req.i_im + ' ' + ' -> ' + gA.EXIF_req_i);
+		if (gA.EXIF_req_i == 0)
+			gA.sync_geoMatrix(); // Если собраны все точки
+	}
 }
 
 geoAlbum.prototype.processImageDiv = function (div, i_im) {
@@ -302,47 +356,27 @@ geoAlbum.prototype.processImageDiv = function (div, i_im) {
 			this.OSM_req_i++;
 			geoAlb_lib.OSM_layer_request(req, this);
 		} else if (div.hasAttribute('lat') && div.hasAttribute('lon')) {
-			var geoPoint = [parseFloat(div.getAttribute('lat')), parseFloat(div.getAttribute('lon'))];
-			this.LonLatGeoLayer(i_gr, i_im, geoPoint, req);
+			var φλ = [parseFloat(div.getAttribute('lat')), parseFloat(div.getAttribute('lon'))];
+			this.φλLayer(i_gr, i_im, φλ, req);
+		} else if (div.hasAttribute('φ') && div.hasAttribute('λ')) {
+			var φλ = [parseFloat(div.getAttribute('φ')), parseFloat(div.getAttribute('λ'))];
+			this.φλLayer(i_gr, i_im, φλ, req);
 		} else if (div.hasAttribute('coordinates')) {
 			var c = JSON.parse(div.getAttribute('coordinates'));
 			if (c && c[0] && c[1]) {
-				var geoPoint = [parseFloat(c[1]), parseFloat(c[0])];
-				this.LonLatGeoLayer(i_gr, i_im, geoPoint, req);
+				var φλ = [parseFloat(c[1]), parseFloat(c[0])];
+				this.φλLayer(i_gr, i_im, φλ, req);
 			}
 		} else if (this.options.exif_geo) {
 			var img = div.getElementsByTagName('img')[0];
 			this.EXIF_req_i++;
-			console.log('exif req: ' + img.src + ' = > ' + req.i_gr + ' ' + req.i_im + ' ');
+			var a_adr = img.src.split('/');
+			console.log('exif req: ' + a_adr[a_adr.length - 1] + ' = > ' + req.i_gr + ' ' + req.i_im + ' ');
 			var exif_obj = new Exif(img.src, {
 				ignored: [],
 				req: req,
 				GA: this,
-				done: function (exif_obj) {
-					function dec(a) {
-						return a[0] + a[1] / 60.0 + a[2] / 3600.0;
-					}
-					var req = this.options.req;
-					try {
-						if (typeof exif_obj.GPSLatitude != 'undefined' && typeof exif_obj.GPSLongitude != 'undefined') {
-							var lat = dec(exif_obj.GPSLatitude);
-							var lon = dec(exif_obj.GPSLongitude);
-							var geoPoint = [lat, lon];
-							this.options.GA.LonLatGeoLayer(req.i_gr, req.i_im, geoPoint, req);
-							console.log('exif: ' + req.i_gr + ' ' + req.i_im + ' ');
-						} else
-							console.log('exif: Z ' + req.i_gr + ' ' + req.i_im + ' ');
-					}
-					catch
-					{
-						console.log('exif: X ' + req.i_gr + ' ' + req.i_im + ' ');
-					}
-					finally {
-						this.options.GA.EXIF_req_i--;
-						if (this.options.GA.EXIF_req_i == 0)
-							this.options.GA.sync_geoMatrix(); // Если собраны все точки
-					}
-				}
+				done: geoAlbum.exif_ok
 			});
 		}
 	}
@@ -393,27 +427,19 @@ geoAlbum.prototype.sync_geoMatrix = function () {
 	for (var i_gr in this.geoDivs) {
 		if (typeof this.geoDivs[i_gr].imageGeoDivs == 'undefined')
 			continue;
-		var Geo = geoAlb_lib.avgGeoDivs(this.geoDivs[i_gr].imageGeoDivs);
-		this.geoDivs[i_gr].Geo = Geo;
+		var φλ = geoAlb_lib.avgGeoDivs(this.geoDivs[i_gr].imageGeoDivs);		
+		this.geoDivs[i_gr].φλ = φλ;
 		var Mark = Number(i_gr) + 1;
-		var MarkL = L.letterMarker(Geo, Mark, 'passiveGroup');
+		var MarkL = L.letterMarker(φλ, Mark, 'passiveGroup');
 		if (typeof this.text_Gr == 'function') {
 			var text = this.text_Gr(this.geoDivs[i_gr].div);
 			if (text)
-				MarkL.bindPopup(text);
+				MarkL.bindTooltip(text);
 		}
 		MarkL.on(
 			'click', function () {
 				var o = this.options;
 				o.GA.focusGroup(o.letter - 1);
-			});
-		MarkL.on(
-			'mouseover', function (e) {
-				this.openPopup();
-			});
-		MarkL.on(
-			'mouseout', function (e) {
-				this.closePopup();
 			});
 		this.geoDivs[i_gr].Layer = MarkL;
 		this.geoDivs[i_gr].Layer.options.GA = this;
@@ -422,7 +448,7 @@ geoAlbum.prototype.sync_geoMatrix = function () {
 			try {
 				var text = this.text_Im(this.geoDivs[i_gr].imageGeoDivs[i_im].div);
 				if (text)
-					this.geoDivs[i_gr].imageGeoDivs[i_im].Layer.bindPopup(text);
+					this.geoDivs[i_gr].imageGeoDivs[i_im].Layer.bindTooltip(text);
 			} catch	{
 			}
 		}
@@ -551,7 +577,7 @@ geoAlbum.prototype.sync_imageMap = function () {
 
 	if (typeof this.options.routeLayer != 'undefined' && this.options.routeLayer) { // Добавление местного слоя - нередко маршрута
 		var rl = this.options.routeLayer;
-		this.imageMap.Control.addOverlay(rl, (typeof rl._popupContent != 'undefined') ? rl._popupContent : 'Маршрут');
+		this.imageMap.Control.addOverlay(rl, (typeof rl._tooltipContent != 'undefined') ? rl._tooltipContent : 'Маршрут');
 		rl.setStyle(this.options.routeStyle ? this.options.routeStyle : { color: '#8000ff', opacity: 0.95 });
 		this.imageMap.map.addLayer(rl);
 	}
@@ -614,7 +640,7 @@ geoAlbum.prototype.focusGroup = function (i_gr, signal = true) {
 	var geoDiv1 = this.geoDivs[i_gr];
 	if (geoDiv1 && !geoDiv1.NaNGeo()) {
 		geoDiv1.Layer.setGeoStatus('activeGroup');
-		this.groupMap.map.panTo(geoDiv1.Geo);
+		this.groupMap.map.panTo(geoDiv1.φλ);
 	}
 	this.content.replaceChild(this.geoDivs[i_gr].div, this.content.firstChild);
 	this.content.scrollTo(0, 0);
@@ -632,7 +658,7 @@ geoAlbum.prototype.focusGroup = function (i_gr, signal = true) {
 		}
 		this.imageMap.map.addLayer(this.imageMap.Layer);
 		if (!geoDiv1.NaNGeo())
-			this.imageMap.map.panTo(geoDiv1.Geo);
+			this.imageMap.map.panTo(geoDiv1.φλ);
 	}
 	this.rootDiv.querySelector("[name=detailmap]").style.visibility = (geoDiv1.NaNGeo()) ? 'hidden' : 'inherit';
 	this.geoDivIdx = i_gr;
@@ -675,29 +701,21 @@ geoAlbum.prototype.focusImage = function (i_gr, i_im, signal = true) {
 		this.geoDivs[i_gr].imageGeoDivs[im].Layer.setGeoStatus('passiveImage');//.setColor(this.options.passiveImageColor ? this.options.passiveImageColor : 'black');
 	}
 
-	this.imageMap.map.panTo(Gr.imageGeoDivs[i_im].Geo);
+	this.imageMap.map.panTo(Gr.imageGeoDivs[i_im].φλ);
 	this.geoDivs[i_gr].imageGeoDivs[i_im].Layer.setGeoStatus('activeImage');//.setColor(this.options.activeImageColor ? this.options.activeImageColor : 'red');
 	if (signal) {
 		this.signal(i_gr, i_im);
 	}
 }
 
-geoAlbum.prototype.imgGeoLayer = function (layer, popup) {
+geoAlbum.prototype.imgφλLayer = function (layer, text) {
 	layer.on('click', function () {
 		var o = this.options;
 		o.GA.focusImage(o.req.i_gr, o.req.i_im);
 		o.GA.scrollImage(o.req.i_gr, o.req.i_im);
 	}
 	);
-	layer.on('mouseover', function (e) {
-		this.openPopup();
-	}
-	);
-	layer.on('mouseout', function (e) {
-		this.closePopup();
-	}
-	);
-	layer.bindPopup(popup);
+	layer.bindTooltip(text);
 	layer.options.GA = this;
 }
 
@@ -727,31 +745,30 @@ geoAlbum.prototype.includeMatrixElement = function (data) {
 	var name = geoAlb_lib.getOsmTag(xml, req.type, req.id, 'name');
 	name = name ? name : geoAlb_lib.getOsmTag(xml, req.type, req.id, 'ref');
 	if (req.type == "node") {
-		elDiv.Geo = geoAlb_lib.OSM_node_geo(xml, req.id);
+		elDiv.φλ = geoAlb_lib.OSM_node_geo(xml, req.id);
 	} else { // rel, way
 		var geoJson0 = osmtogeojson(xml);
 		var polyStyle = this.imagePolygonStyle;
 		polyStyle.color = req.div.hasAttribute('color') ? req.div.getAttribute('color') : polyStyle.color;
 		var polyLayer = L.geoJSON(geoAlb_lib.geoJsonRemoveOsmNodes(geoJson0), polyStyle);
 		polyLayer.options.req = req;
-		this.imgGeoLayer(polyLayer, req.letter + (name ? (" ⇒ " + name) : ""))
+		this.imgφλLayer(polyLayer, req.letter + (name ? (" ⇒ " + name) : ""))
 		elDiv.polyLayer = polyLayer;
-		elDiv.Geo = geoAlb_lib.OSM_node_avg(xml);
+		elDiv.φλ = geoAlb_lib.OSM_node_avg(xml);
 	}
-	var Geo = elDiv.Geo;
-	var nLay = L.letterMarker(Geo, req.letter, 'passiveImage')
+	var φλ = elDiv.φλ;
+	var nLay = L.letterMarker(φλ, req.letter, 'passiveImage')
 	nLay.options.req = req;
 	elDiv.Layer = nLay;
-	this.imgGeoLayer(nLay, req.letter + (name ? (" ⇒ " + name) : ""))
+	this.imgφλLayer(nLay, req.letter + (name ? (" ⇒ " + name) : ""))
 	this.OSM_req_i--;
 	this.sync_geoMatrix();
 }
 
 // Смена фокуса
 geoAlbum.prototype.signal = function (i_gr, i_im) {
-	var add = ((i_im) ? ("-" + this.indexImg(i_im)) : "");
-	location.hash = "#" + encodeURI(this.rootDiv.id + "-" + (i_gr + 1) + add);
-	//  alert (location.hash);
+	var suffix = ((i_im) ? ("-" + this.indexImg(i_im)) : "");
+	location.hash = "#" + encodeURI(this.rootDiv.id + "-" + (i_gr + 1) + suffix);
 }
 
 /**
@@ -766,8 +783,8 @@ L.LetterMarker = L.Marker.extend({
 		icon: new L.DivIcon({ popupAnchor: [2, -2] })
 	},
 
-	initialize: function (latlng, letter, geostatus, options) {
-		L.Marker.prototype.initialize.call(this, latlng, options);
+	initialize: function (φλ, letter, geostatus, options) {
+		L.Marker.prototype.initialize.call(this, φλ, options);
 		this.options.letter = letter;
 		this.options.geostatus = geostatus;
 	},
@@ -819,12 +836,12 @@ L.LetterMarker = L.Marker.extend({
 /**
 * Класс специализированных меток в кружочке
 * @initialize настраивает координаты, знак, цвета и пр.
-* @param {LonLat} latlng - Координаты метки.
+* @param {LonLat} φλ - Координаты метки.
 * @param {string} letter - Знак.
 * @param {object} options - настройки
 */
-L.letterMarker = function (latlng, letter, geostatus, options) {
-	return new L.LetterMarker(latlng, letter, geostatus, options);
+L.letterMarker = function (φλ, letter, geostatus, options) {
+	return new L.LetterMarker(φλ, letter, geostatus, options);
 }
 
 /**
@@ -886,49 +903,49 @@ geoAlb_lib.OSM_xml_node_geo = function (OSM_node) {
 }
 
 // Вычисляет среднее геометрическое массива координат
-geoAlb_lib.Geo_avg = function (Geo) {
-	if (Geo.length == 1)
-		return Geo[0];
-	var lat = []; var lon = [];
-	for (var i in Geo) {
-		if (Geo[i] != null) {
-			lat.push(Geo[i][0]);
-			lon.push(Geo[i][1]);
+geoAlb_lib.φλ_avg = function (φλ) {
+	if (φλ.length == 1)
+		return φλ[0];
+	var φ = []; var λ = [];
+	for (var i in φλ) {
+		if (φλ[i] != null) {
+			φ.push(φλ[i][0]);
+			λ.push(φλ[i][1]);
 		}
 	}
-	var minlat = Math.min.apply(null, lat);
-	var maxlat = Math.max.apply(null, lat);
-	var avg_lat = (minlat + maxlat) / 2;
-	var minlon = Math.min.apply(null, lon);
-	var maxlon = Math.max.apply(null, lon);
-	var avg_lon = (minlon + maxlon) / 2;
-	return [avg_lat, avg_lon];
+	var minφ = Math.min.apply(null, φ);
+	var maxφ = Math.max.apply(null, φ);
+	var avg_φ = (minφ + maxφ) / 2;
+	var minλ = Math.min.apply(null, λ);
+	var maxλ = Math.max.apply(null, λ);
+	var avg_λ = (minλ + maxλ) / 2;
+	return [avg_φ, avg_λ];
 };
 
 // Усреднение в массиве geoDiv
 geoAlb_lib.avgGeoDivs = function (a) {
-	var Geo = [];
+	var φλ = [];
 	for (var i in a) {
 		if (!a[i].NaNGeo()) {
-			Geo.push(a[i].Geo);
+			φλ.push(a[i].φλ);
 		}
 	}
-	return geoAlb_lib.Geo_avg(Geo);
+	return geoAlb_lib.φλ_avg(φλ);
 }
 
 // Вычисляет среднее геометрическое точек из OSM XML документа
 geoAlb_lib.OSM_node_avg = function (xml) {
-	var Geo = [];
+	var φλ = [];
 	var el = xml.getElementsByTagName('node');
 	for (var i = 0; i < el.length; i++) {
-		Geo.push([el[i].getAttribute('lat'),
+		φλ.push([el[i].getAttribute('lat'),
 		el[i].getAttribute('lon')]);
 	}
-	return geoAlb_lib.Geo_avg(Geo);
+	return geoAlb_lib.φλ_avg(φλ);
 };
 
 // По коду точки в OSM возвращает объект с широтой и долготой.
-geoAlb_lib.OSM_node_geo = function (xml, id, latlon = true) {
+geoAlb_lib.OSM_node_geo = function (xml, id, φλ = true) {
 	var nodes = xml.getElementsByTagName('node');
 	var nd = {};
 	for (var i = 0; i < nodes.length; i++) {
@@ -938,7 +955,7 @@ geoAlb_lib.OSM_node_geo = function (xml, id, latlon = true) {
 	if (!nd)
 		return null;
 	var osmg = geoAlb_lib.OSM_xml_node_geo(nd);
-	if (latlon)
+	if (φλ)
 		return osmg;
 	return [osmg[1], osmg[0]];
 };
