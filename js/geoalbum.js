@@ -423,13 +423,13 @@ geoAlbum.prototype.sync_geoMatrix = function () {
 			if (text)
 				MarkL.bindTooltip(text);
 		}
-		MarkL.onclick = function () {
+		MarkL.on ('click', function () {
 				var o = this.options;
 				o.GA.focusGroup(o.letter - 1);
-			};
+			});
 		this.geoDivs[i_gr].Layer = MarkL;
 		this.geoDivs[i_gr].Layer.options.GA = this;
-
+		// Расставяются подписи внутри всех групп
 		for (var i_im in this.geoDivs[i_gr].imageGeoDivs) {
 			try {
 				var text = this.text_Im(this.geoDivs[i_gr].imageGeoDivs[i_im].div);
@@ -563,6 +563,9 @@ geoAlbum.prototype.sync_imageMap = function () {
 
 	if (typeof this.options.routeLayer != 'undefined' && this.options.routeLayer) { // Добавление местного слоя - нередко маршрута
 		var rl = this.options.routeLayer;
+		rl.on('mouseover', function (e) {
+		    e.target.getTooltip().setLatLng(e.latlng)
+		});
 		this.imageMap.Control.addOverlay(rl, (typeof rl._tooltipContent != 'undefined') ? rl._tooltipContent : 'Маршрут');
 		rl.setStyle(this.options.routeStyle ? this.options.routeStyle : { color: '#8000ff', opacity: 0.95 });
 		this.imageMap.map.addLayer(rl);
@@ -683,12 +686,15 @@ geoAlbum.prototype.focusImage = function (i_gr, i_im, signal = true) {
 		alert("Индекс иллюстрации " + this.indexImg(i_im) + " вне пределов группы № " + i_gr + " в " + this.rootDiv.id + " !");
 		return;
 	}
-	for (var im in this.geoDivs[i_gr].imageGeoDivs) {
-		this.geoDivs[i_gr].imageGeoDivs[im].Layer.setGeoStatus('passiveImage');//.setColor(this.options.passiveImageColor ? this.options.passiveImageColor : 'black');
+	var igd = this.geoDivs[i_gr].imageGeoDivs;
+	for (var im in igd) {
+		if (!igd[im].NaNGeo())
+			igd[im].Layer.setGeoStatus('passiveImage');
 	}
-
-	this.imageMap.map.panTo(Gr.imageGeoDivs[i_im].φλ);
-	this.geoDivs[i_gr].imageGeoDivs[i_im].Layer.setGeoStatus('activeImage');//.setColor(this.options.activeImageColor ? this.options.activeImageColor : 'red');
+	if (!igd[i_im].NaNGeo()){
+		igd[i_im].Layer.setGeoStatus('activeImage');
+		this.imageMap.map.panTo(Gr.imageGeoDivs[i_im].φλ);
+	}
 	if (signal) {
 		this.signal(i_gr, i_im);
 	}
