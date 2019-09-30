@@ -266,26 +266,12 @@ geoAlbum.prototype.φλLayer = function (i_gr, i_im, φλ, req, φλ1) {
 		var o = lt;
 		var pl = L.polyline([φλ, φλ1], {color:'#FF0000', width:2 });
 		lt = L.layerGroup();
-
-/*L.polylineDecorator(exif_line, {
-				    patterns: [{
-			        	offset: 1, 
-						symbol: L.Symbol.arrowHead({
-							pixelSize: 8, 
-							polygon: false/*, 
-							pathOptions: {
-								stroke: true
-							}*
-						})
-					}]
-				});  */
 		lt.addLayer(pl);
 		lt.addLayer(o);
 		lt.setGeoStatus = o.setGeoStatus;
 	}
-	var text = this.text_Im(matrixEl.div);
-	if (text)
-		this.imgφλLayer(lt, text);
+	var text = (typeof req.exif_obj == 'undefined') ? this.text_Im(matrixEl.div) : '';
+	this.imgφλLayer(lt, text);
 	lt.options.req = req;
 	matrixEl.Layer = lt;
 }
@@ -299,6 +285,7 @@ geoAlbum.exif_ok = function (exif_obj) {
 		return (a[0] + a[1] / 60.0 + a[2] / 3600.0) * (( x == "W" || x == "S") ? -1 : 1);
 	}
 	var req = this.options.req;
+	req.exif_obj = exif_obj;
 	var gA = this.options.GA;
 	var lit = '';
 	try {
@@ -436,11 +423,10 @@ geoAlbum.prototype.sync_geoMatrix = function () {
 			if (text)
 				MarkL.bindTooltip(text);
 		}
-		MarkL.on(
-			'click', function () {
+		MarkL.onclick = function () {
 				var o = this.options;
 				o.GA.focusGroup(o.letter - 1);
-			});
+			};
 		this.geoDivs[i_gr].Layer = MarkL;
 		this.geoDivs[i_gr].Layer.options.GA = this;
 
@@ -713,9 +699,9 @@ geoAlbum.prototype.imgφλLayer = function (layer, text) {
 		var o = this.options;
 		o.GA.focusImage(o.req.i_gr, o.req.i_im);
 		o.GA.scrollImage(o.req.i_gr, o.req.i_im);
-	}
-	);
-	layer.bindTooltip(text);
+	});
+	if (text)
+		layer.bindTooltip(text);
 	layer.options.GA = this;
 }
 
@@ -746,7 +732,7 @@ geoAlbum.prototype.includeMatrixElement = function (data) {
 	name = name ? name : geoAlb_lib.getOsmTag(xml, req.type, req.id, 'ref');
 	if (req.type == "node") {
 		elDiv.φλ = geoAlb_lib.OSM_node_geo(xml, req.id);
-	} else { // rel, way
+	} else { // OSM rel, way
 		var geoJson0 = osmtogeojson(xml);
 		var polyStyle = this.imagePolygonStyle;
 		polyStyle.color = req.div.hasAttribute('color') ? req.div.getAttribute('color') : polyStyle.color;
