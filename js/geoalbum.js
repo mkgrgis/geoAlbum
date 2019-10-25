@@ -270,9 +270,19 @@ geoAlbum.prototype.φλLayer = function (i_gr, i_im, φλ, req, φλ1) {
 	lt.options.req = req;
 	matrixEl.Layer = lt;
 }
-
+// Поиск символа для индекса
 geoAlbum.prototype.indexImg = function (i_im) {
 	return (typeof this.locale.imIndices[i_im] != 'undefined') ? this.locale.imIndices[i_im] : i_im;
+}
+// Обратный поиск индекса для символа
+geoAlbum.prototype.indexImgRev = function (code_im) {
+	if (typeof this.locale.imIndices == 'undefined')
+		returm code_im;
+	for (var s in this.locale.imIndices){
+		if (this.locale.imIndices[s] == code_im)
+			return s;
+	}	
+	return code_im;
 }
 
 geoAlbum.exif_ok = function (exif_obj) {
@@ -473,7 +483,7 @@ geoAlbum.hashChange = function () {
 		if (ho.name == geoAlbum.__hash_register.name[i_GA]) {
 			var i_gr = ho.i_gr - 1;
 			var GA = geoAlbum.__hash_register.GA[i_GA];
-			var i_im = GA.indexImg(ho.code_im);
+			var i_im = GA.indexImgRev(ho.code_im);
 			if (!GA.block) { // Блокировка если адрес изменился по внутреннему вызову
 				GA.focusImage(i_gr, i_im, true);
 				if (i_im >= 0)
