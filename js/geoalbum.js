@@ -682,9 +682,14 @@ geoAlbum.prototype.scrollImage = function (i_gr, i_im) {
 	this.content.scrollTop = pos.top;
 }
 
-// Смена выбранной группы иллюстраций
+// Смена выбранной иллюстрации
 geoAlbum.prototype.focusImage = function (i_gr, i_im, signal = true) {
-	if (typeof i_im == 'undefined' || (!this.focusGroup(i_gr, false)) || i_im < 0)
+	if (typeof i_im == 'undefined')
+	{
+		this.focusGroup(i_gr, false);
+		return;
+	}
+	if (i_im < 0)
 		return;
 	var Gr = this.geoDivs[i_gr];
 	if (typeof Gr.imageGeoDivs == 'undefined' || i_im > Gr.imageGeoDivs.length - 1) {
