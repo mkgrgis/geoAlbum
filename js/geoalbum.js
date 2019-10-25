@@ -859,11 +859,10 @@ geoAlb_lib.deconstructHash = function (hash) {
 	var el = hash.split('#')[1];
 	if (!el)
 		return { name: null, i_gr: null, code_im: null };
-	return {
-		name: el.split('-')[0],
-		i_gr: el.split('-')[1],
-		i_im: el.split('-')[2]
-	};
+	var name = el.split('-')[0];
+	var i_gr = el.split('-')[1];
+	var code_im = el.split('-')[2];
+	return { name: name, i_gr: i_gr, code_im: code_im };
 }
 
 // Асинхронное получение файла
