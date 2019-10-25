@@ -277,7 +277,7 @@ geoAlbum.prototype.indexImg = function (i_im) {
 // Обратный поиск индекса для символа
 geoAlbum.prototype.indexImgRev = function (code_im) {
 	if (typeof this.locale.imIndices == 'undefined')
-		returm code_im;
+		return code_im;
 	for (var s in this.locale.imIndices){
 		if (this.locale.imIndices[s] == code_im)
 			return s;
