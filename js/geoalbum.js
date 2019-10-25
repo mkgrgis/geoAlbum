@@ -684,9 +684,10 @@ geoAlbum.prototype.scrollImage = function (i_gr, i_im) {
 
 // Смена выбранной иллюстрации
 geoAlbum.prototype.focusImage = function (i_gr, i_im, signal = true) {
+	if (!this.focusGroup(i_gr, false))
+		return;
 	if (typeof i_im == 'undefined')
-	{
-		this.focusGroup(i_gr, false);
+	{	
 		return;
 	}
 	if (i_im < 0)
