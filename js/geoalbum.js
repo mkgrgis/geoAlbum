@@ -482,7 +482,7 @@ geoAlbum.prototype.sync_geoMatrix = function () {
 }
 
 // Срабатывает при загрузке иллюстрации, если она не загружена до момента загрузки альбома
-geoAlbum.imgIncrement = function {
+geoAlbum.imgIncrement = function () {
     geoAlbum.imgOk++;
     if ( geoAlbum.imgOk === geoAlbum.imgN ) {
         geoAlbum.hashChange();
