@@ -473,6 +473,20 @@ geoAlbum.prototype.sync_geoMatrix = function () {
 	geoAlbum.__hash_register.GA.push(this);
 
 	this.sync_imageMap();
+	var imgs = document.images;
+	geoAlbum.imgN = imgs.length;
+	geoAlbum.imgOk = 0;
+	[].forEach.call( imgs, function( img ) {
+    		img.addEventListener( 'load', geoAlbum.imgIncrement, false );
+	} );
+}
+
+// Срабатывает при загрузке иллюстрации, если она не загружена до момента загрузки альбома
+geoAlbum.imgIncrement = function {
+    geoAlbum.imgOk++;
+    if ( geoAlbum.imgOk === geoAlbum.imgN ) {
+        geoAlbum.hashChange();
+    }
 }
 
 // Срабатывает при изменении адреса
