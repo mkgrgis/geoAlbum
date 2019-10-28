@@ -484,17 +484,18 @@ geoAlbum.prototype.ImgLoadCycle = function () {
 		Ok : 0
 	};
 	for (var k in i) {
-		i[k].addEventListener( 'load', this.imgIncrement, false );
+		i[k].GA_ = this;
+		i[k].addEventListener( 'load', geoAlbum.imgIncrement, false );
 	}
 }
 
 // Срабатывает при загрузке иллюстрации, если она не загружена до момента загрузки альбома
-geoAlbum.prototype.imgIncrement = function () {
-	this.img.Ok++;
-	if ( this.img.Ok === this.img.N ) {
+geoAlbum.imgIncrement = function () {
+	this.GA_.img.Ok++;
+	if ( this.GA_.img.Ok === this.GA_.img.N ) {
 		console.log('img ok');
 		geoAlbum.hashChange();
-		this.ImgLoadCycle();
+		this.GA_.ImgLoadCycle();
 	}
 }
 
