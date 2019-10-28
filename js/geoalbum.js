@@ -484,9 +484,11 @@ geoAlbum.prototype.ImgLoadCycle = function () {
 		Ok : 0
 	};
 	for (var k in i) {
-		i[k].GA_ = this;
-		i[k].addEventListener( 'load', geoAlbum.imgIncrement, false );
+		i[k].GA_ = this;		
 	}
+	[].forEach.call(i, function(el){
+		el.addEventListener( 'load', geoAlbum.imgIncrement, false );
+	});
 }
 
 // Срабатывает при загрузке иллюстрации, если она не загружена до момента загрузки альбома
