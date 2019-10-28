@@ -477,9 +477,11 @@ geoAlbum.prototype.sync_geoMatrix = function () {
 }
 
 geoAlbum.prototype.ImgLoadCycle = function () {
-	this.img.s = document.images;
-	this.img.N = imgs.length;
-	this.img.Ok = 0;
+	this.img = {
+		s : document.images,
+		N : document.images.length,
+		Ok : 0
+	};
 	for (var k in this.img.s) {
 		this.img.s[k].addEventListener( 'load', this.imgIncrement, false );
 	}
