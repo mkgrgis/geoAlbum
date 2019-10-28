@@ -477,9 +477,9 @@ geoAlbum.prototype.sync_geoMatrix = function () {
 }
 
 geoAlbum.prototype.ImgLoadCycle = function () {
-	var this.img.s = document.images;
-	geoAlbum.img.N = imgs.length;
-	geoAlbum.img.Ok = 0;
+	this.img.s = document.images;
+	this.img.N = imgs.length;
+	this.img.Ok = 0;
 	for (var k in this.img.s) {
 		this.img.s[k].addEventListener( 'load', this.imgIncrement, false );
 	}
@@ -487,8 +487,8 @@ geoAlbum.prototype.ImgLoadCycle = function () {
 
 // Срабатывает при загрузке иллюстрации, если она не загружена до момента загрузки альбома
 geoAlbum.prototype.imgIncrement = function () {
-	geoAlbum.img.Ok++;
-	if ( geoAlbum.img.Ok === geoAlbum.img.N ) {
+	this.img.Ok++;
+	if ( this.img.Ok === this.img.N ) {
 		console.log('img ok');
 		geoAlbum.hashChange();
 		this.ImgLoadCycle();
