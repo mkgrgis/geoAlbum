@@ -476,7 +476,7 @@ geoAlbum.prototype.sync_geoMatrix = function () {
 	this.ImgLoadCycle();
 }
 
-geoAlbum.prototype.ImgLoadCycle = function (){
+geoAlbum.prototype.ImgLoadCycle = function () {
 	var this.img.s = document.images;
 	geoAlbum.img.N = imgs.length;
 	geoAlbum.img.Ok = 0;
@@ -486,7 +486,7 @@ geoAlbum.prototype.ImgLoadCycle = function (){
 }
 
 // Срабатывает при загрузке иллюстрации, если она не загружена до момента загрузки альбома
-geoAlbum.protoype.imgIncrement = function () {
+geoAlbum.prototype.imgIncrement = function () {
 	geoAlbum.img.Ok++;
 	if ( geoAlbum.img.Ok === geoAlbum.img.N ) {
 		console.log('img ok');
