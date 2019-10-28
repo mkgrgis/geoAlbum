@@ -476,9 +476,9 @@ geoAlbum.prototype.sync_geoMatrix = function () {
 	var imgs = document.images;
 	geoAlbum.imgN = imgs.length;
 	geoAlbum.imgOk = 0;
-	[].forEach.call( imgs, function( img ) {
-    		img.addEventListener( 'load', geoAlbum.imgIncrement, false );
-	} );
+	for (var k in imgs) {
+		imgs[k].addEventListener( 'load', geoAlbum.imgIncrement, false );
+	}
 }
 
 // Срабатывает при загрузке иллюстрации, если она не загружена до момента загрузки альбома
@@ -494,7 +494,7 @@ geoAlbum.imgIncrement = function () {
 geoAlbum.hashChange = function () {
 	var urlh = decodeURI(location.hash);
 	var ho = geoAlb_lib.deconstructHash(urlh);
-	for (i_GA in geoAlbum.__hash_register.GA) {
+	for (var i_GA in geoAlbum.__hash_register.GA) {
 		if (ho.name == geoAlbum.__hash_register.name[i_GA]) {
 			var i_gr = ho.i_gr - 1;
 			var GA = geoAlbum.__hash_register.GA[i_GA];
