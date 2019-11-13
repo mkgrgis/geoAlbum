@@ -796,7 +796,7 @@ geoAlbum.prototype.includeMatrixElement = function (data) {
 
 // Смена фокуса
 geoAlbum.prototype.signal = function (i_gr, i_im) {
-	var suffix = ((i_im) ? ("-" + this.indexImg(i_im)) : "");
+	var suffix = ((typeof i_im != 'undefined') ? ("-" + this.indexImg(i_im)) : "");
 	location.hash = "#" + encodeURI(this.rootDiv.id + "-" + (i_gr + 1) + suffix);
 }
 
