@@ -263,7 +263,12 @@ geoAlbum.prototype.φλLayer = function (i_gr, i_im, φλ, req, φλ1) {
 	matrixEl.φλ = φλ;
 	var lt = L.letterMarker(φλ, req.letter, 'passiveImage');
 	if (φλ1){
-		matrixEl.polyLayer = L.polyline([φλ, φλ1], {color:'#FF0000', width:2 });
+		var lin_exif = L.polyline([φλ, φλ1], {color:'#FF0000', width:2 });
+		lin_exif.bindTooltip(i_im);
+		lin_exif.on('mouseover', function (e) {
+		    e.target.getTooltip().setLatLng(e.latlng)
+		});
+		matrixEl.polyLayer = lin_exif;
 	}
 	var text = (typeof req.exif_obj == 'undefined') ? this.text_Im(matrixEl.div) : '';
 	this.imgφλLayer(lt, text);
