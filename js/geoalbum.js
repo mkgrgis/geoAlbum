@@ -75,6 +75,16 @@ function geoAlbum(geoAlbum_div, options) {
 		return;
 	}
 	this.rootDiv = geoAlbum_div;
+	this.baseDivs = {
+		content: document.createElement('div'),
+		maps:  document.createElement('div'),
+		overviewmap:  document.createElement('div'),
+		detailmap:  document.createElement('div')	
+	};
+	for (var i in this.baseDivs)
+	{
+		this.baseDivs[i].setAttribute('name', i);
+	}
 	this.content = null;
 	this.geoDivs = [];
 	this.geoDivIdx = null;
@@ -142,14 +152,19 @@ function geoAlbum(geoAlbum_div, options) {
 		dashArray: '',
 		radius: 0
 	};
+	this.content = this.baseDivs.content;
+	this.content.appendChild(document.createComment(''));
 
 	this.OSM_req_i = 0;
 	this.EXIF_req_i = 0;
 	this.processRootDiv();
 
-	this.rootDiv.innerHTML = '<div name="content"></div><div name="maps"><div name="overviewmap"></div><div name="detailmap"></div></div>';
-	this.content = this.rootDiv.querySelector('div[name="content"]');
-	this.content.appendChild(document.createComment(''));
+	this.rootDiv.innerHTML = ""; // '<div name="content"></div><div name="maps"><div name="overviewmap"></div><div name="detailmap"></div></div>';
+	this.rootDiv.appendChild(this.baseDivs.content);
+	this.baseDivs.maps.appendChild(this.baseDivs.overviewmap);
+	this.baseDivs.maps.appendChild(this.baseDivs.detailmap);
+	this.rootDiv.appendChild(this.baseDivs.maps);
+
 	this.sync_geoMatrix(); // Если собраны все точки
 }
 
@@ -176,10 +191,9 @@ geoAlbum.prototype.text_Gr = function (div) {
 }
 
 geoAlbum.prototype.processRootDiv = function () {
-	// Обработка элементов групп иллюстраций - занесение в массив
-	var iGrDiv = [];
+	// Обработка элементов групп иллюстраций - занесение в массив	
 	var a = this.rootDiv.childNodes;
-	for (var divChRD, cRD = 0; cRD < a.length; cRD++) {
+	for (var cRD = 0; cRD < a.length; cRD++) {
 		ChRD = a[cRD];
 		if (ChRD.nodeType == 1 && ChRD.localName != 'script') {
 			var ImgArr = this.indexImgGeoDiv(ChRD);
@@ -364,7 +378,7 @@ geoAlbum.prototype.processImageDiv = function (div, i_im) {
 				var φλ = [parseFloat(c[1]), parseFloat(c[0])];
 				this.φλLayer(i_gr, i_im, φλ, req);
 			}
-		} else if (this.options.exif_geo) {
+		} else if (this.options.exif_geo) { // Проверяются метаданные изображения только если нет других
 			var img = div.getElementsByTagName('img')[0];
 			this.EXIF_req_i++;
 			var a_adr = img.src.split('/');
@@ -452,7 +466,7 @@ geoAlbum.prototype.sync_geoMatrix = function () {
 
 	// Усреднение координат между группами
 	this.globalAvg = geoAlb_lib.avgGeoDivs(this.geoDivs);
-	var mc = this.rootDiv.querySelector('div[name="overviewmap"]');
+	var mc = this.baseDivs.overviewmap;
 	var ms = new Date().getTime();
 	mc.setAttribute('id', 'ov' + ms);
 	this.groupMap = new mapDiv(
@@ -569,7 +583,7 @@ geoAlbum.prototype.req_SubAreas = function (rel_data){
 geoAlbum.prototype.sync_imageMap = function () {
 	if (!(this.ok_geoMatrix() && this.ok_main_rel() && this.ok_subAreas()))
 		return;
-	var dm = this.rootDiv.querySelector("[name=detailmap]")
+	var dm = this.baseDivs.detailmap;
 	var ms = new Date().getTime();
 	dm.setAttribute('id', 'dm' + ms);
 	this.imageMap = new mapDiv(
@@ -685,7 +699,7 @@ geoAlbum.prototype.focusGroup = function (i_gr, signal = true) {
 		if (!geoDiv1.NaNGeo())
 			this.imageMap.map.panTo(geoDiv1.φλ);
 	}
-	this.rootDiv.querySelector("[name=detailmap]").style.visibility = (geoDiv1.NaNGeo()) ? 'hidden' : 'inherit';
+	this.baseDivs.detailmap.style.visibility = (geoDiv1.NaNGeo()) ? 'hidden' : 'inherit';
 	this.geoDivIdx = i_gr;
 	if (signal)
 		this.signal(this.geoDivIdx, null);
