@@ -476,7 +476,7 @@ geoAlbum.prototype.init_geoMatrix = function () {
 			continue;
 		var φλ = geoAlb_lib.avgGeoDivs(this.geoDivs[i_gr].imageGeoDivs);
 		this.geoDivs[i_gr].φλ = φλ;
-		if (this.NaNGeo(geoDivs[i_gr]))
+		if (this.NaNGeo(this.geoDivs[i_gr]))
 			continue;
 		var Mark = Number(i_gr) + 1;
 		var MarkL = L.letterMarker(φλ, Mark, 'passiveGroup');
