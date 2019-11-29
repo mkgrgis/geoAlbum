@@ -476,6 +476,8 @@ geoAlbum.prototype.init_geoMatrix = function () {
 			continue;
 		var φλ = geoAlb_lib.avgGeoDivs(this.geoDivs[i_gr].imageGeoDivs);
 		this.geoDivs[i_gr].φλ = φλ;
+		if (this.NaNGeo(geoDivs[i_gr]))
+			continue;
 		var Mark = Number(i_gr) + 1;
 		var MarkL = L.letterMarker(φλ, Mark, 'passiveGroup');
 		if (typeof this.text_Gr == 'function') {
@@ -501,13 +503,17 @@ geoAlbum.prototype.init_geoMatrix = function () {
 	}
 
 	// Усреднение координат между группами
-	this.globalAvg = geoAlb_lib.avgGeoDivs(this.geoDivs);
+	this.baseDivs._root.φλ = geoAlb_lib.avgGeoDivs(this.geoDivs);
+	if (this.NaNGeo(this.baseDivs._root)){
+		alert ('В альбоме совсем нет никаких координат!');
+		return;
+	}
 	var mc = this.baseDivs.overviewmap;
 	var ms = new Date().getTime();
 	mc.setAttribute('id', 'ov' + ms);
 	this.groupMap = new mapDiv(
 		mc,
-		this.globalAvg,
+		this.baseDivs._root.φλ,
 		this.options.groupMapProvider ? this.options.groupMapProvider : 'OpenStreetMap.Mapnik',
 		this.options.groupMapName ? this.options.groupMapName : 'ОСМ/Мапник',
 		this.options.groupMapZ ? this.options.groupMapZ : { ini: 10, min: 1, max: 17 },
@@ -614,7 +620,7 @@ geoAlbum.prototype.init_imageMap = function () {
 	dm.setAttribute('id', 'dm' + ms);
 	this.imageMap = new mapDiv(
 		dm,
-		this.globalAvg,
+		this.baseDivs._root.φλ,
 		this.options.imageMapProvider ? this.options.imageMapProvider : 'OpenStreetMap.Mapnik',
 		this.options.imageMapName ? this.options.imageMapName : 'ОСМ/Мапник',
 		this.options.imageMapZ ? this.options.imageMapZ : { ini: 15, min: 7, max: 21 },
