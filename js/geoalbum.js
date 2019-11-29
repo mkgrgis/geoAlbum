@@ -475,9 +475,9 @@ geoAlbum.prototype.init_geoMatrix = function () {
 		if (typeof this.geoDivs[i_gr].imageGeoDivs == 'undefined')
 			continue;
 		var φλ = geoAlb_lib.avgGeoDivs(this.geoDivs[i_gr].imageGeoDivs);
-		this.geoDivs[i_gr].φλ = φλ;
-		if (this.NaNGeo(this.geoDivs[i_gr]))
+		if (isNaN(φλ[0]) || isNaN(φλ[1]))
 			continue;
+		this.geoDivs[i_gr].φλ = φλ;		
 		var Mark = Number(i_gr) + 1;
 		var MarkL = L.letterMarker(φλ, Mark, 'passiveGroup');
 		if (typeof this.text_Gr == 'function') {
@@ -503,11 +503,12 @@ geoAlbum.prototype.init_geoMatrix = function () {
 	}
 
 	// Усреднение координат между группами
-	this.baseDivs._root.φλ = geoAlb_lib.avgGeoDivs(this.geoDivs);
-	if (this.NaNGeo(this.baseDivs._root)){
+	var φλ = geoAlb_lib.avgGeoDivs(this.geoDivs);	
+	if (isNaN(φλ[0]) || isNaN(φλ[1])){
 		alert ('В альбоме совсем нет никаких координат!');
 		return;
 	}
+	this.baseDivs._root.φλ = φλ;
 	var mc = this.baseDivs.overviewmap;
 	var ms = new Date().getTime();
 	mc.setAttribute('id', 'ov' + ms);
