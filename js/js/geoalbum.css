@@ -1,0 +1,141 @@
+body {
+    margin: 10px;
+    font-size: 10pt;
+    font-family: "Verdana", "Arial", "Helvetica", sans-serif;
+}
+
+div[name="content"] {
+    height: 94vh;
+    width: 62%;
+	overflow-y: scroll;
+	border: 4px #ddd solid;
+    box-shadow: 0 0 3px 3px #ccc;
+    float: left;
+    padding-bottom: 15px;
+}
+
+div[name="maps"] {
+	right: 0;
+	margin-left: 63%;
+/*    margin-left: 680px;*/
+}
+
+div[name="detailmap"] {
+    height: 56vh;
+	border: 5px #aaa solid;
+	border-radius: 5px;
+    box-shadow: 0 0 3px 3px #ccc;
+  /*  margin: 1em auto;*/
+}
+
+div[name="overviewmap"] {
+    height: 38vh;
+	border: 5px #aaa solid;
+	border-radius: 5px;
+    box-shadow: 0 0 3px 3px #ccc;
+  /*  margin: 1em auto;*/
+}
+
+.photoidx {
+  /*  position: absolute;*/
+    background-color: blue;
+    margin-left: 6px;
+    margin-top: 6px;
+    text-align: center;
+    font-size: 10px;
+    width: 15px;
+    height: 15px;
+    color: white;
+    border-radius: 7px;
+	cursor:pointer;
+   /* opacity: 0.4; */
+}
+
+.nav p {
+    font-size: 14pt;
+    color: darkblue;
+    text-decoration: none;
+    background: #eef;
+    padding: 5px 5px;
+    border-radius: 10px;
+	margin-top: 0; 
+    margin-bottom: 0;
+}
+
+.navright {
+    float: right;
+	cursor:pointer;
+}
+
+.navleft {
+    float: left;
+	cursor:pointer;
+}
+
+.nav {
+    margin: 0px 0;
+    width: 100%;
+    height: 35px;
+	margin-top: 0; 
+    margin-bottom: 0;
+}
+
+div[geo="1"] {
+	margin-left: -7px;
+	margin-top:  -7px;
+	width: 15px;
+	height: 15px;
+	border-radius: 7px;
+	font-size: 10px;
+	font-family: sans-serif;
+	font-weight: bold;
+	text-align: center;
+	line-height: 15px;
+	background-color: black;
+	color : white;
+}
+
+div[geostatus="activeGroup"] {	
+	background-color: blue;
+}
+
+div[geostatus="passiveGroup"] {	
+	background-color: black;
+}
+
+div[geostatus="activeImage"] {	
+	background-color: red;
+}
+
+div[geostatus="passiveImage"] {
+	background-color: gray;
+}
+
+.exif_title {
+	margin-left: 0px;
+    margin-top:  0px;	
+    margin-bottom:  0px;
+	font-size: 10px;
+	text-align: left;	
+	background-color: white;
+	color : black;
+}
+
+.exif_date {
+	margin-left: 0px;
+    margin-top:  0px;
+    margin-bottom:  0px;
+	font-size: 90%;
+	font-family: sans-serif;	
+	text-align: left;
+	color : gray;
+}
+
+
+.exif_author {
+	margin-left: 2px;
+    margin-top: 0px;	
+    margin-bottom: 2px;
+	font-weight: bold;
+	text-align: left;
+}
