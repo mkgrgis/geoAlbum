@@ -117,5 +117,34 @@ div[geostatus="activeImage"] {
 }
 
 div[geostatus="passiveImage"] {
-	color: yellow;
+	background-color: yellow;
+}
+
+.exif_title {
+	margin-left: 0px;
+    margin-top:  0px;	
+    margin-bottom:  0px;
+	font-size: 10px;
+	text-align: left;	
+	background-color: white;
+	color : black;
+}
+
+.exif_date {
+	margin-left: 0px;
+    margin-top:  0px;
+    margin-bottom:  0px;
+	font-size: 90%;
+	font-family: sans-serif;	
+	text-align: left;
+	color : gray;
+}
+
+
+.exif_author {
+	margin-left: 2px;
+    margin-top: 0px;	
+    margin-bottom: 2px;
+	font-weight: bold;
+	text-align: left;
 }

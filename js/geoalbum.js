@@ -295,6 +295,7 @@ geoAlbum.prototype.processGroupDiv = function (div, i_gr) {	// Добавляю�
 	div.insertBefore(navt, div.firstChild);
 }
 
+// Добавленеи слоя с отображенеим точки изображения
 geoAlbum.prototype.φλLayer = function (i_gr, i_im, φλ, req, φλ1) {
 	var matrixEl = this.geoDivs[i_gr].imageGeoDivs[i_im];
 	matrixEl.φλ = φλ;
@@ -327,13 +328,17 @@ geoAlbum.prototype.indexImgRev = function (code_im) {
 	return code_im;
 }
 
-geoAlbum.exif_ok = function (exif_obj) {
-	function dec(a, x) {
-		return (a[0] + a[1] / 60.0 + a[2] / 3600.0) * ((x == "W" || x == "S") ? -1 : 1);
-	}
+geoAlbum.exif_ok = function (exif_obj) {	
 	var req = this.options.req;
 	req.exif_obj = exif_obj;
 	var gA = this.options.GA;
+	gA.exif_ok(exif_obj, req, this.options.img);
+}
+
+geoAlbum.prototype.exif_ok = function(exif_obj, req, img){
+	function dec(a, x) {
+		return (a[0] + a[1] / 60.0 + a[2] / 3600.0) * ((x == "W" || x == "S") ? -1 : 1);
+	}
 	var lit = '';
 	try {
 		if (typeof exif_obj.GPSLatitude != 'undefined' && typeof exif_obj.GPSLongitude != 'undefined') {
@@ -344,8 +349,26 @@ geoAlbum.exif_ok = function (exif_obj) {
 				var φ1 = dec(exif_obj.GPSDestLatitude, exif_obj.GPSDestLatitudeRef);
 				var λ1 = dec(exif_obj.GPSDestLongitude, exif_obj.GPSDestLongitudeRef);
 				φλ1 = [φ1, λ1];
+			}			
+			if (typeof exif_obj.DateTimeOriginal != 'undefined' && this.options.exif.DateTimeOriginal) {
+				var p = document.createElement('p');
+				p.className = 'exif_date';
+				p.innerText = exif_obj.DateTimeOriginal;
+				img.parentNode.insertBefore(p, img.nextSibling);
 			}
-			gA.φλLayer(req.i_gr, req.i_im, [φ, λ], req, φλ1);
+			if (typeof exif_obj.Artist != 'undefined' && this.options.exif.Artist) {
+				var p = document.createElement('p');
+				p.className = 'exif_author';
+				p.innerText = this.options.locale.exif_Artist + ' : ' + exif_obj.Artist;
+				img.parentNode.insertBefore(p, img.nextSibling);
+			}
+			if (typeof exif_obj.UserComment != 'undefined' && this.options.exif.Title) {
+				var p = document.createElement('p');
+				p.className = 'exif_title';
+				p.innerText = this.exif_title(exif_obj.UserComment);
+				img.parentNode.insertBefore(p, img.nextSibling);
+			}
+			this.φλLayer(req.i_gr, req.i_im, [φ, λ], req, φλ1);
 		} else
 			lit = 'Z';
 	}
@@ -354,13 +377,20 @@ geoAlbum.exif_ok = function (exif_obj) {
 		lit = 'X';
 	}
 	finally {
-		gA.EXIF_req_i--;
-		console.log( '(' + gA.EXIF_req_i + ')' + ' exif <- [' + req.i_gr + ' ' + req.i_im + '] ' + lit );
-		if (gA.EXIF_req_i == 0){
+		this.EXIF_req_i--;
+		console.log( '(' + this.EXIF_req_i + ')' + ' exif <- [' + req.i_gr + ' ' + req.i_im + '] ' + lit );
+		if (this.EXIF_req_i == 0){
 			console.log('exif 0');
-			gA.init_geoMatrix(); // Если собраны все точки
+			this.init_geoMatrix(); // Если собраны все точки
 		}
 	}
+}
+
+geoAlbum.prototype.exif_title = function (UserComment){
+	return UserComment;
+	/*ASCII (hex 41, 53, 43, 49, 49, 00, 00, 00): ITU-T T.50 IA5
+JIS (hex 4A, 49, 53, 00, 00, 00, 00, 00): JIS X208-1990
+Unicode (hex 55, 4E, 49, 43, 4F, 44, 45, 00): Unicode Standard */
 }
 
 geoAlbum.prototype.processImageDiv = function (div, i_im) {
@@ -417,6 +447,7 @@ geoAlbum.prototype.processImageDiv = function (div, i_im) {
 			ignored: [],
 			req: req,
 			GA: this,
+			img: img,
 			done: geoAlbum.exif_ok
 		});
 	}
