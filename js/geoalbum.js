@@ -295,7 +295,7 @@ geoAlbum.prototype.processGroupDiv = function (div, i_gr) {	// Добавляю�
 	div.insertBefore(navt, div.firstChild);
 }
 
-// Добавленеи слоя с отображенеим точки изображения
+// Добавление слоя с отображенеим точки изображения
 geoAlbum.prototype.φλLayer = function (i_gr, i_im, φλ, req, φλ1) {
 	var matrixEl = this.geoDivs[i_gr].imageGeoDivs[i_im];
 	matrixEl.φλ = φλ;
@@ -306,6 +306,7 @@ geoAlbum.prototype.φλLayer = function (i_gr, i_im, φλ, req, φλ1) {
 		lin_exif.on('mouseover', function (e) {
 			e.target.getTooltip().setLatLng(e.latlng)
 		});
+		lin_exif.bindToolti(lt);
 		matrixEl.polyLayer = lin_exif;
 	}
 	var text = (typeof req.exif_obj == 'undefined') ? this.text_Im(matrixEl.div) : '';
