@@ -174,10 +174,15 @@ function geoAlbum(geoAlbum_div, options) {
 }
 
 geoAlbum.prototype.parseRootDiv = function () {	
+    if (this.modifRoot)
+    {
+	    console.warn('Неверный вызов разбора');
+    	return;
+    }
 	this.baseDivs.content.appendChild(document.createComment('')); // Пустое наполнение для последующей подмены
 	this.processRootDiv(this.baseDivs._root);
 	this.modifyRootDiv();
-	console.log('root div 0');
+	console.log('root div ✓');
 	this.init_geoMatrix(); // Если собраны все точки
 }
 
@@ -195,7 +200,7 @@ geoAlbum.prototype.text_Im = function (div) { // Текст к элементу 
 	if (typeof this.options.functionImgH == 'function') {
 		try {
 			return this.options.functionImgH(div);
-		} catch {
+		} catch (e){
 			return null;
 		}
 	}
@@ -206,7 +211,7 @@ geoAlbum.prototype.text_Gr = function (div) { // Текст к группе эл
 	if (typeof this.options.functionGrH == 'function') {
 		try {
 			return this.options.functionGrH(div);
-		} catch {
+		} catch (e) {
 			return null;
 		}
 	}
@@ -339,9 +344,10 @@ geoAlbum.prototype.exif_ok = function(exif_obj, req, img){
 	function dec(a, x) {
 		return (a[0] + a[1] / 60.0 + a[2] / 3600.0) * ((x == "W" || x == "S") ? -1 : 1);
 	}
-	var lit = '';
+	var lit = '✓';
 	try {
 		if (typeof exif_obj.GPSLatitude != 'undefined' && typeof exif_obj.GPSLongitude != 'undefined') {
+		    var oe = this.options.exif;
 			var φ = dec(exif_obj.GPSLatitude, exif_obj.GPSLatitudeRef);
 			var λ = dec(exif_obj.GPSLongitude, exif_obj.GPSLongitudeRef);
 			var φλ1 = null;
@@ -350,37 +356,37 @@ geoAlbum.prototype.exif_ok = function(exif_obj, req, img){
 				var λ1 = dec(exif_obj.GPSDestLongitude, exif_obj.GPSDestLongitudeRef);
 				φλ1 = [φ1, λ1];
 			}			
-			if (typeof exif_obj.DateTimeOriginal != 'undefined' && this.options.exif.DateTimeOriginal) {
+			if (typeof exif_obj.DateTimeOriginal != 'undefined' && oe && oe.DateTimeOriginal) {
 				var p = document.createElement('p');
 				p.className = 'exif_date';
 				p.innerText = exif_obj.DateTimeOriginal;
 				img.parentNode.insertBefore(p, img.nextSibling);
 			}
-			if (typeof exif_obj.Artist != 'undefined' && this.options.exif.Artist) {
+			if (typeof exif_obj.Artist != 'undefined' && oe && oe.Artist) {
 				var p = document.createElement('p');
 				p.className = 'exif_author';
 				p.innerText = this.options.locale.exif_Artist + ' : ' + exif_obj.Artist;
 				img.parentNode.insertBefore(p, img.nextSibling);
 			}
-			if (typeof exif_obj.UserComment != 'undefined' && this.options.exif.Title) {
+			if (typeof exif_obj.UserComment != 'undefined' && oe && oe.Title) {
 				var p = document.createElement('p');
 				p.className = 'exif_title';
 				p.innerText = this.exif_title(exif_obj.UserComment);
 				img.parentNode.insertBefore(p, img.nextSibling);
 			}
-			this.φλLayer(req.i_gr, req.i_im, [φ, λ], req, φλ1);
+			this.φλLayer(req.i_gr, req.i_im, [φ, λ], req, φλ1); // console.log('φ , λ ' + φ + ' ' + λ );
 		} else
-			lit = 'Z';
+			lit = '[φ,λ]=∅';
 	}
-	catch
+	catch (e)
 	{
-		lit = 'X';
+		lit = '✘';
 	}
 	finally {
 		this.EXIF_req_i--;
 		console.log( '(' + this.EXIF_req_i + ')' + ' exif <- [' + req.i_gr + ' ' + req.i_im + '] ' + lit );
 		if (this.EXIF_req_i == 0){
-			console.log('exif 0');
+			console.log('exif ✓');
 			this.init_geoMatrix(); // Если собраны все точки
 		}
 	}
@@ -479,7 +485,7 @@ geoAlbum.prototype.ok_geoMatrix = function () {
 }
 geoAlbum.prototype.ok_imgLoad = function () {
 	for (var i in this.img.s) {
-		if ((this.img.s[i].width == 0) || (this.img.s[i].height == 0))
+		if ((this.img.s[i].width == 0) || (this.img.s[i].height == 0) || !this.img.s[i].complete)
 			return false;
 	}
 	return true;
@@ -496,7 +502,7 @@ geoAlbum.prototype.init_geoMatrix = function () {
 		// Все запросы на координаты иллюстраций завершены
 		return;
 	this._ok_geoMatrix = true;
-	console.log('geoMatrix ok');
+	console.log('geoMatrix ✓');
 /*while (this.rootDiv.firstChild){} // Все дочерние корневого убраны
 	this.rootDiv.removeChild(this.rootDiv.firstChild);
 }*/
@@ -528,7 +534,7 @@ geoAlbum.prototype.init_geoMatrix = function () {
 				var text = this.text_Im(this.geoDivs[i_gr].imageGeoDivs[i_im].div);
 				if (text)
 					this.geoDivs[i_gr].imageGeoDivs[i_im].Layer.bindTooltip(text);
-			} catch	{
+			} catch (e)	{
 			}
 		}
 	}
@@ -574,9 +580,9 @@ geoAlbum.imgIncrement = function () {
 }
 
 geoAlbum.prototype.imgIncrement = function () {
-	this.img.Ok++; 	// console.log('img ok : ' + this.img.Ok + ' N=' + this.img.N);
-	if ((this.img.Ok === this.img.N) || this.ok_imgLoad()) {
-		console.log('img !');
+	this.img.Ok++; // console.log('img ok : ' + this.img.Ok + ' N=' + this.img.N + ' ' + (this.img.Ok === this.img.N) + ' ' + this.ok_imgLoad());
+	if ((this.img.Ok === this.img.N) && this.ok_imgLoad()) {
+		console.log('img ✓ ' + this.img.Ok  + ' \\ ' + this.img.N);
 		if (this.options.exif_geo)
 			this.parseRootDiv();
 		else
