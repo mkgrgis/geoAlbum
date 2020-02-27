@@ -1,9 +1,12 @@
+# геоАльбом
+Географический альбом показывает карты с точками после того, как изменяет гипертекст, с элементами, содержащими географические координаты.
+
 # geoAlbum
 geographical almum modificate HTML with coordinates to indicate maps
 
-<a href="Пейзажный парк в Алуксне.html"> Demo </a>
+<a href="https://mkgrgis.github.io/geoAlbum_/%D0%9F%D0%B5%D0%B9%D0%B7%D0%B0%D0%B6%D0%BD%D1%8B%D0%B9%20%D0%BF%D0%B0%D1%80%D0%BA%20%D0%B2%20%D0%90%D0%BB%D1%83%D0%BA%D1%81%D0%BD%D0%B5.html"> Демонстрация / Demo </a>
 
-To 
+Образец / Example
 <img src="https://raw.githubusercontent.com/mkgrgis/geoAlbum/master/Demo.png"/>
 
 From div with coordinates or OSM codes
