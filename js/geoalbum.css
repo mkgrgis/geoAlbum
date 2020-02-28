@@ -1,9 +1,3 @@
-body {
-    margin: 10px;
-    font-size: 10pt;
-    font-family: "Verdana", "Arial", "Helvetica", sans-serif;
-}
-
 div[name="content"] {
     height: 94vh;
     width: 63%;
@@ -36,8 +30,7 @@ div[name="overviewmap"] {
     margin: 3px auto;
 }
 
-.photoidx {
-  /*  position: absolute;*/
+.photoidx {  
     background-color: blue;
     margin-left: 6px;
     margin-top: 6px;
@@ -47,8 +40,7 @@ div[name="overviewmap"] {
     height: 15px;
     color: white;
     border-radius: 7px;
-	cursor:pointer;
-   /* opacity: 0.4; */
+    cursor:pointer;
 }
 
 .nav p {
@@ -130,7 +122,6 @@ div[geostatus="passiveImage"] {
 	text-align: left;
 	color : gray;
 }
-
 
 .exif_author {
 	margin-left: 2px;
