@@ -23,18 +23,18 @@ function mapDiv(div, center_φλ, provider, providerName, Z, controls) {
 	}
 	var a = Array.isArray(provider);
 	var prov0 = (a ? provider[0] : provider);
-	this.ini_layer = (typeof prov0 === 'string') ? L.tileLayer.provider(prov0) : prov0;
+	this.ini_layer = (typeof prov0 == 'string') ? L.tileLayer.provider(prov0) : prov0;
 	this.ini_layer.addTo(this.map);
 	if (controls) {
 		this.Control = new L.Control.Layers();
-		var n0 = providerName ? (Array.isArray(providerName) ? providerName[0] : providerName) : ((typeof prov0 === 'string') ? prov0 : '?');
+		var n0 = providerName ? (Array.isArray(providerName) ? providerName[0] : providerName) : ((typeof prov0 == 'string') ? prov0 : '?');
 		this.Control.addBaseLayer(this.ini_layer, n0);
 		if (a) {
 			for (var i in provider) {
 				if (i != 0) {
 					var prov = provider[i];
-					var provStr = providerName[i] ? providerName[i] : ((typeof prov === 'string') ? prov : '?');
-					this.Control.addBaseLayer((typeof prov === 'string') ? L.tileLayer.provider(prov) : prov, provStr);
+					var provStr = providerName[i] ? providerName[i] : ((typeof prov == 'string') ? prov : '?');
+					this.Control.addBaseLayer((typeof prov == 'string') ? L.tileLayer.provider(prov) : prov, provStr);
 				}
 			}
 		}
@@ -197,7 +197,7 @@ geoAlbum.prototype.modifyRootDiv = function (){ // Подмена места р�
 };
 
 geoAlbum.prototype.text_Im = function (div) { // Текст к элементу альбома 
-	if (typeof this.options.functionImgH === 'function') {
+	if (typeof this.options.functionImgH == 'function') {
 		try {
 			return this.options.functionImgH(div);
 		} catch (e){
@@ -208,7 +208,7 @@ geoAlbum.prototype.text_Im = function (div) { // Текст к элементу 
 };
 
 geoAlbum.prototype.text_Gr = function (div) { // Текст к группе элементов альбома
-	if (typeof this.options.functionGrH === 'function') {
+	if (typeof this.options.functionGrH == 'function') {
 		try {
 			return this.options.functionGrH(div);
 		} catch (e) {
@@ -223,7 +223,7 @@ geoAlbum.prototype.processRootDiv = function (div) {
 	var a = div.childNodes;
 	for (var cRD = 0; cRD < a.length; cRD++) {
 		ChRD = a[cRD];
-		if (ChRD.nodeType === 1 && ChRD.localName !== 'script') {
+		if (ChRD.nodeType == 1 && ChRD.localName != 'script') {
 			var ImgArr = this.indexImgGeoDiv(ChRD);
 			var geoImgGr = (ImgArr.length > 0);
 			this.geoDivs.push(new geoDiv(ChRD, geoImgGr)); // this.processImg(ChRD);
@@ -241,19 +241,19 @@ geoAlbum.prototype.processRootDiv = function (div) {
 };
 
 geoAlbum.prototype.indexImgGeoDiv = function (div) {
-	if (div.nodeType !== 1)
+	if (div.nodeType != 1)
 		return [];
 	var iImgDiv = [];
 	var divChGD = div.childNodes;
 	for (var cGD = 0; cGD < divChGD.length; cGD++) {
-		if (divChGD[cGD].nodeType === 1 && this.isGeoImageDiv(divChGD[cGD]))
+		if (divChGD[cGD].nodeType == 1 && this.isGeoImageDiv(divChGD[cGD]))
 			iImgDiv.push(cGD);
 	}
 	return iImgDiv;
 }
 
 geoAlbum.prototype.isGeoImageDiv = function (div) {
-	if (div.getElementsByTagName('img').length === 0)
+	if (div.getElementsByTagName('img').length == 0)
 		return false;
 	if (this.options.exif_geo)
 		return true;
@@ -313,21 +313,21 @@ geoAlbum.prototype.φλLayer = function (i_gr, i_im, φλ, req, φλ1) {
 		});
 		matrixEl.polyLayer = lin_exif;
 	}
-	var text = (typeof req.exif_obj === 'undefined') ? this.text_Im(matrixEl.div) : '';
+	var text = (typeof req.exif_obj == 'undefined') ? this.text_Im(matrixEl.div) : '';
 	this.imgφλLayer(lt, text);
 	lt.options.req = req;
 	matrixEl.Layer = lt;
 };
 // Поиск символа для индекса
 geoAlbum.prototype.indexImg = function (i_im) {
-	return (typeof this.locale.imIndices[i_im] !== 'undefined') ? this.locale.imIndices[i_im] : i_im;
+	return (typeof this.locale.imIndices[i_im] != 'undefined') ? this.locale.imIndices[i_im] : i_im;
 };
 // Обратный поиск индекса для символа
 geoAlbum.prototype.indexImgRev = function (code_im) {
-	if (typeof this.locale.imIndices === 'undefined')
+	if (typeof this.locale.imIndices == 'undefined')
 		return code_im;
 	for (var s in this.locale.imIndices) {
-		if (this.locale.imIndices[s] === code_im)
+		if (this.locale.imIndices[s] == code_im)
 			return s;
 	}
 	return code_im;
@@ -342,33 +342,33 @@ geoAlbum.exif_ok = function (exif_obj) {
 
 geoAlbum.prototype.exif_ok = function(exif_obj, req, img){
 	function dec(a, x) {
-		return (a[0] + a[1] / 60.0 + a[2] / 3600.0) * ((x === "W" || x === "S") ? -1 : 1);
+		return (a[0] + a[1] / 60.0 + a[2] / 3600.0) * ((x == "W" || x == "S") ? -1 : 1);
 	}
 	var lit = '✓';
 	try {
-		if (typeof exif_obj.GPSLatitude !== 'undefined' && typeof exif_obj.GPSLongitude !== 'undefined') {
+		if (typeof exif_obj.GPSLatitude != 'undefined' && typeof exif_obj.GPSLongitude != 'undefined') {
 		    var oe = this.options.exif;
 			var φ = dec(exif_obj.GPSLatitude, exif_obj.GPSLatitudeRef);
 			var λ = dec(exif_obj.GPSLongitude, exif_obj.GPSLongitudeRef);
 			var φλ1 = null;
-			if (typeof exif_obj.GPSDestLatitude !== 'undefined' && typeof exif_obj.GPSDestLongitude !== 'undefined') {
+			if (typeof exif_obj.GPSDestLatitude != 'undefined' && typeof exif_obj.GPSDestLongitude != 'undefined') {
 				var φ1 = dec(exif_obj.GPSDestLatitude, exif_obj.GPSDestLatitudeRef);
 				var λ1 = dec(exif_obj.GPSDestLongitude, exif_obj.GPSDestLongitudeRef);
 				φλ1 = [φ1, λ1];
 			}			
-			if (typeof exif_obj.DateTimeOriginal !== 'undefined' && oe && oe.DateTimeOriginal) {
+			if (typeof exif_obj.DateTimeOriginal != 'undefined' && oe && oe.DateTimeOriginal) {
 				var p = document.createElement('p');
 				p.className = 'exif_date';
 				p.innerText = exif_obj.DateTimeOriginal;
 				img.parentNode.insertBefore(p, img.nextSibling);
 			}
-			if (typeof exif_obj.Artist !== 'undefined' && oe && oe.Artist) {
+			if (typeof exif_obj.Artist != 'undefined' && oe && oe.Artist) {
 				var p = document.createElement('p');
 				p.className = 'exif_author';
 				p.innerText = this.options.locale.exif_Artist + ' : ' + exif_obj.Artist;
 				img.parentNode.insertBefore(p, img.nextSibling);
 			}
-			if (typeof exif_obj.UserComment !== 'undefined' && oe && oe.Title) {
+			if (typeof exif_obj.UserComment != 'undefined' && oe && oe.Title) {
 				var p = document.createElement('p');
 				p.className = 'exif_title';
 				p.innerText = this.exif_title(exif_obj.UserComment);
@@ -385,7 +385,7 @@ geoAlbum.prototype.exif_ok = function(exif_obj, req, img){
 	finally {
 		this.EXIF_req_i--;
 		console.log( '(' + this.EXIF_req_i + ')' + ' exif <- [' + req.i_gr + ' ' + req.i_im + '] ' + lit );
-		if (this.EXIF_req_i === 0){
+		if (this.EXIF_req_i == 0){
 			console.log('exif ✓');
 			this.init_geoMatrix(); // Если собраны все точки
 		}
@@ -426,7 +426,7 @@ geoAlbum.prototype.processImageDiv = function (div, i_im) {
 			osm_tag_i = i_tg;
 		}
 	}
-	if (osm_tag_i !== null) {
+	if (osm_tag_i != null) {
 		req.id = Number(div.getAttribute(geoAlb_lib.osm_tag[osm_tag_i]));
 		req.type = geoAlb_lib.osm_type[osm_tag_i];
 		this.OSM_req_i++;
@@ -477,14 +477,14 @@ geoAlbum.prototype.ok_main_rel = function () {
 	return (!this.OSM_rel_data.main_rel.id) || (this.OSM_rel_data.main_rel.id && this.OSM_rel_data.main_rel.layer);
 };
 geoAlbum.prototype.ok_subAreas = function () {
-	return (!this.options.contur) ? true : ((!this.options.contur.subAreas) || (this.options.contur.subAreas && this.OSM_rel_data.subAreas.n_req === 0));
+	return (!this.options.contur) ? true : ((!this.options.contur.subAreas) || (this.options.contur.subAreas && this.OSM_rel_data.subAreas.n_req == 0));
 };
 geoAlbum.prototype.ok_geoMatrix = function () {
-	return (this.modifRoot && this.OSM_req_i === 0 && this.EXIF_req_i === 0 && (!this.options.exif_geo || this.ok_imgLoad()));
+	return (this.modifRoot && this.OSM_req_i == 0 && this.EXIF_req_i == 0 && (!this.options.exif_geo || this.ok_imgLoad()));
 };
 geoAlbum.prototype.ok_imgLoad = function () {
 	for (var i in this.img.s) {
-		if ((this.img.s[i].width === 0) || (this.img.s[i].height === 0) || !this.img.s[i].complete)
+		if ((this.img.s[i].width == 0) || (this.img.s[i].height == 0) || !this.img.s[i].complete)
 			return false;
 	}
 	return true;
@@ -508,7 +508,7 @@ geoAlbum.prototype.init_geoMatrix = function () {
 
 	// Усреднение координат внутри групп
 	for (var i_gr in this.geoDivs) {
-		if (typeof this.geoDivs[i_gr].imageGeoDivs === 'undefined')
+		if (typeof this.geoDivs[i_gr].imageGeoDivs == 'undefined')
 			continue;
 		var φλ = geoAlb_lib.avgGeoDivs(this.geoDivs[i_gr].imageGeoDivs);
 		if (isNaN(φλ[0]) || isNaN(φλ[1]))
@@ -516,7 +516,7 @@ geoAlbum.prototype.init_geoMatrix = function () {
 		this.geoDivs[i_gr].φλ = φλ;		
 		var Mark = Number(i_gr) + 1;
 		var MarkL = L.letterMarker(φλ, Mark, 'passiveGroup');
-		if (typeof this.text_Gr === 'function') {
+		if (typeof this.text_Gr == 'function') {
 			var text = this.text_Gr(this.geoDivs[i_gr].div);
 			if (text)
 				MarkL.bindTooltip(text);
@@ -561,7 +561,7 @@ geoAlbum.prototype.init_geoMatrix = function () {
 	if (this.OSM_rel_data.main_rel.id)
 		geoAlb_lib.OSM_layer_request(this.OSM_rel_data.main_rel, this);
 
-	if (geoAlbum.__hash_register.name.length === 0) {
+	if (geoAlbum.__hash_register.name.length == 0) {
 		window.addEventListener('hashchange', function (event) {
 			geoAlbum.hashChange();
 		});
@@ -579,8 +579,8 @@ geoAlbum.imgIncrement = function () {
 };
 
 geoAlbum.prototype.imgIncrement = function () {
-	this.img.Ok++; // console.log('img ok : ' + this.img.Ok + ' N=' + this.img.N + ' ' + (this.img.Ok === this.img.N) + ' ' + this.ok_imgLoad());
-	if ((this.img.Ok === this.img.N) && this.ok_imgLoad()) {
+	this.img.Ok++; // console.log('img ok : ' + this.img.Ok + ' N=' + this.img.N + ' ' + (this.img.Ok == this.img.N) + ' ' + this.ok_imgLoad());
+	if ((this.img.Ok == this.img.N) && this.ok_imgLoad()) {
 		console.log('img ✓ ' + this.img.Ok  + ' \\ ' + this.img.N);
 		if (this.options.exif_geo)
 			this.parseRootDiv();
@@ -594,7 +594,7 @@ geoAlbum.hashChange = function () {
 	var urlh = decodeURI(location.hash);
 	var ho = geoAlb_lib.deconstructHash(urlh);
 	for (var i_GA in geoAlbum.__hash_register.GA) {
-		if (ho.name === geoAlbum.__hash_register.name[i_GA]) {
+		if (ho.name == geoAlbum.__hash_register.name[i_GA]) {
 			var i_gr = ho.i_gr - 1;
 			var GA = geoAlbum.__hash_register.GA[i_GA];
 			var i_im = GA.indexImgRev(ho.code_im);
@@ -679,18 +679,18 @@ geoAlbum.prototype.init_imageMap = function () {
 		}
 	}
 
-	if (typeof this.options.routeLayer !== 'undefined' && this.options.routeLayer) { // Добавление местного слоя - нередко маршрута
+	if (typeof this.options.routeLayer != 'undefined' && this.options.routeLayer) { // Добавление местного слоя - нередко маршрута
 		var rl = this.options.routeLayer;
 		rl.on('mouseover', function (e) {
 			e.target.getTooltip().setLatLng(e.latlng);
 		});
-		this.imageMap.Control.addOverlay(rl, (typeof rl._tooltipContent !== 'undefined') ? rl._tooltipContent : 'Маршрут');
+		this.imageMap.Control.addOverlay(rl, (typeof rl._tooltipContent != 'undefined') ? rl._tooltipContent : 'Маршрут');
 		rl.setStyle(this.options.routeStyle ? this.options.routeStyle : { color: '#8000ff', opacity: 0.95 });
 		this.imageMap.map.addLayer(rl);
 	}
 	this.focusGroup(0, false);
 	geoAlbum.hashChange();
-	if (typeof (this.options.functionFinal) === 'function')
+	if (typeof (this.options.functionFinal) == 'function')
 		this.options.functionFinal(this);
 };
 
@@ -723,16 +723,16 @@ geoAlbum.prototype.subAreaRelationOk = function (data) {
 	if (gss.level_max > data.level)
 		this.req_SubAreas(data);
 	gss.n_req--;
-	if (gss.n_req === 0)
+	if (gss.n_req == 0)
 		this.init_imageMap();
 };
 
 // Смена выбранной группы иллюстраций
 geoAlbum.prototype.focusGroup = function (i_gr, signal = true) {
-	if (typeof i_gr === 'undefined')
+	if (typeof i_gr == 'undefined')
 		return false;
 	var i = this.geoDivIdx;
-	if (i === i_gr)
+	if (i == i_gr)
 		return true;
 
 	if (i_gr > this.geoDivs.length - 1 || i_gr < 0) {
@@ -760,7 +760,7 @@ geoAlbum.prototype.focusGroup = function (i_gr, signal = true) {
 		for (var i_im in this.geoDivs[i_gr].imageGeoDivs) {
 			if (!this.geoDivs[i_gr].imageGeoDivs[i_im].NaNGeo()) {
 				this.imageMap.Layer.addLayer(this.geoDivs[i_gr].imageGeoDivs[i_im].Layer);
-				if (this.geoDivs[i_gr].imageGeoDivs[i_im].polyLayer !== null)
+				if (this.geoDivs[i_gr].imageGeoDivs[i_im].polyLayer != null)
 					this.imageMap.Layer.addLayer(this.geoDivs[i_gr].imageGeoDivs[i_im].polyLayer);
 			}
 		}
@@ -788,7 +788,7 @@ geoAlbum.prototype.scrollImage = function (i_gr, i_im) {
 		return pos;
 	}
 	// Установка смещения прокрутки
-	if (this.geoDivIdx !== i_gr)
+	if (this.geoDivIdx != i_gr)
 		throw (new Exception("Не в группе!"));
 	var im_div = this.geoDivs[i_gr].imageGeoDivs[i_im].div;
 
@@ -800,13 +800,13 @@ geoAlbum.prototype.scrollImage = function (i_gr, i_im) {
 geoAlbum.prototype.focusImage = function (i_gr, i_im, signal = true) {
 	if (!this.focusGroup(i_gr, false))
 		return;
-	if (typeof i_im === 'undefined') {
+	if (typeof i_im == 'undefined') {
 		return;
 	}
 	if (i_im < 0)
 		return;
 	var Gr = this.geoDivs[i_gr];
-	if (typeof Gr.imageGeoDivs === 'undefined' || i_im > Gr.imageGeoDivs.length - 1) {
+	if (typeof Gr.imageGeoDivs == 'undefined' || i_im > Gr.imageGeoDivs.length - 1) {
 		alert("Индекс иллюстрации " + this.indexImg(i_im) + " вне пределов группы № " + i_gr + " в " + this.baseDivs._root.id + " !");
 		return;
 	}
@@ -862,7 +862,7 @@ geoAlbum.prototype.includeMatrixElement = function (data) {
 	var elDiv = this.geoDivs[req.i_gr].imageGeoDivs[req.i_im];
 	var name = geoAlb_lib.getOsmTag(xml, req.type, req.id, 'name');
 	name = name ? name : geoAlb_lib.getOsmTag(xml, req.type, req.id, 'ref');
-	if (req.type === "node") {
+	if (req.type == "node") {
 		elDiv.φλ = geoAlb_lib.OSM_node_geo(xml, req.id);
 	} else { // OSM rel, way
 		var geoJson0 = osmtogeojson(xml);
@@ -886,7 +886,7 @@ geoAlbum.prototype.includeMatrixElement = function (data) {
 
 // Смена фокуса
 geoAlbum.prototype.signal = function (i_gr, i_im) {
-	var suffix = ((typeof i_im !== 'undefined' && i_im !== null) ? ("-" + this.indexImg(i_im)) : "");
+	var suffix = ((typeof i_im != 'undefined' && i_im != null) ? ("-" + this.indexImg(i_im)) : "");
 	location.hash = "#" + encodeURI(this.baseDivs._root.id + "-" + (i_gr + 1) + suffix);
 };
 
@@ -982,7 +982,7 @@ geoAlb_lib.OSM_API_URL = geoAlb_lib.OSM_baseURL + '/api/0.6/'; //Выборка 
 
 // Формирует одрес ОСМ объекта
 geoAlb_lib.OSM_URL = function (type, id, suff) {
-	var _smod = (suff !== '') ? '/' + suff : '';
+	var _smod = (suff != '') ? '/' + suff : '';
 	return geoAlb_lib.OSM_API_URL + type + '/' + id + _smod;
 };
 
@@ -1008,8 +1008,8 @@ geoAlb_lib.OSM_layer_request = function (req_par, GA) {
 	xhr.open('GET', url, true);
 	xhr.send();
 	xhr.onreadystatechange = function () {
-		if (xhr.readyState !== 4) return;
-		if (xhr.status !== 200 && (xhr.status !== 0 || xhr.response)) {
+		if (xhr.readyState != 4) return;
+		if (xhr.status != 200 && (xhr.status != 0 || xhr.response)) {
 			console.warn("Такого объекта нет в БД OSM! " + xhr.req_par.id + " " + xhr.req_par.type + " " + xhr.url);
 		} else
 			xhr.GA.OSM_layer_include(xhr);
@@ -1023,11 +1023,11 @@ geoAlb_lib.OSM_xml_node_geo = function (OSM_node) {
 
 // Вычисляет среднее геометрическое массива координат
 geoAlb_lib.φλ_avg = function (φλ) {
-	if (φλ.length === 1)
+	if (φλ.length == 1)
 		return φλ[0];
 	var φ = []; var λ = [];
 	for (var i in φλ) {
-		if (φλ[i] !== null) {
+		if (φλ[i] != null) {
 			φ.push(φλ[i][0]);
 			λ.push(φλ[i][1]);
 		}
@@ -1068,7 +1068,7 @@ geoAlb_lib.OSM_node_geo = function (xml, id, φλ = true) {
 	var nodes = xml.getElementsByTagName('node');
 	var nd = {};
 	for (var i = 0; i < nodes.length; i++) {
-		if (nodes[i].getAttribute('id') === id)
+		if (nodes[i].getAttribute('id') == id)
 			nd = nodes[i];
 	}
 	if (!nd)
@@ -1083,7 +1083,7 @@ geoAlb_lib.OSM_node_geo = function (xml, id, φλ = true) {
 geoAlb_lib.geoJsonRemoveOsmNodes = function (geoJson) {
 
 	for (var i = 0; i < geoJson.features.length; i++) {
-		if (geoJson.features[i].geometry.type === 'Point') {
+		if (geoJson.features[i].geometry.type == 'Point') {
 			geoJson.features.splice(i, 1);
 			i--;
 		}
@@ -1095,7 +1095,7 @@ geoAlb_lib.geoJsonRemoveOsmNodes = function (geoJson) {
 geoAlb_lib.getRelationXmlTree = function (xml, osm_rl_id) {
 	var relations = xml.getElementsByTagName('relation');
 	for (var i = 0; i < relations.length; i++) {
-		if (relations[i].getAttribute('id') === osm_rl_id)
+		if (relations[i].getAttribute('id') == osm_rl_id)
 			return relations[i];
 	}
 	return null;
@@ -1110,7 +1110,7 @@ geoAlb_lib.getSubAreas = function (xml, osm_rl_id) {
 	var members = relXml.getElementsByTagName('member');
 	var j = 0;
 	for (var i = 0; i < members.length; i++) {
-		if (members[i].getAttribute('type') === 'relation' && members[i].getAttribute('role') === 'subarea')
+		if (members[i].getAttribute('type') == 'relation' && members[i].getAttribute('role') == 'subarea')
 			subAreas[j++] = members[i].getAttribute('ref');
 	}
 	return subAreas;
@@ -1122,7 +1122,7 @@ geoAlb_lib.geoJsonDecomposeSubAreas = function (geoJson, osm_rl_id) {
 	for (var i = 0; i < geoJson.features.length; i++) {
 		if (geoJson.features[i].geometry.type.indexOf('Polygon') + 1)
 			if (geoJson.features[i].id.indexOf('relation/') + 1) {
-				if (geoJson.features[i].id !== 'relation/' + osm_rl_id) {
+				if (geoJson.features[i].id != 'relation/' + osm_rl_id) {
 					geoJson.features.splice(i--, 1);
 				}
 			}
@@ -1136,7 +1136,7 @@ geoAlb_lib.geoJsonDecomposeSubAreas = function (geoJson, osm_rl_id) {
 geoAlb_lib.relationSelfPolygon = function (geoJson, osm_rl_id) {
 	for (var i = 0; i < geoJson.features.length; i++) {
 		if ((geoJson.features[i].geometry.type.indexOf('Polygon') + 1) &&
-			(geoJson.features[i].id === 'relation/' + osm_rl_id))
+			(geoJson.features[i].id == 'relation/' + osm_rl_id))
 			return i;
 	}
 	return null;
@@ -1147,7 +1147,7 @@ geoAlb_lib.getOsmTag = function (xml, type, osm_id, tag) {
 	var ok = null;
 	var elements = xml.getElementsByTagName(type);
 	for (var i = 0; i < elements.length; i++) {
-		if (elements[i].getAttribute('id') === osm_id) {
+		if (elements[i].getAttribute('id') == osm_id) {
 			ok = ' ';
 			break;
 		}
@@ -1156,7 +1156,7 @@ geoAlb_lib.getOsmTag = function (xml, type, osm_id, tag) {
 		return null;
 	var tags = elements[i].getElementsByTagName('tag');
 	for (var j = 0; j < tags.length; j++) {
-		if (tags[j].getAttribute('k') === tag)
+		if (tags[j].getAttribute('k') == tag)
 			return tags[j].getAttribute('v');
 	}
 	return null;
