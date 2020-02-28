@@ -742,11 +742,12 @@ geoAlbum.prototype.focusGroup = function (i_gr, signal = true) {
 	var geoDiv0 = this.geoDivs[i];
 	if (geoDiv0 && !geoDiv0.NaNGeo()) {
 		geoDiv0.Layer.setGeoStatus('passiveGroup');
+                geoDiv0.Layer.setZIndexOffset(0);
 	}
 	var geoDiv1 = this.geoDivs[i_gr];
 	if (geoDiv1 && !geoDiv1.NaNGeo()) {
 		geoDiv1.Layer.setGeoStatus('activeGroup');
-		geoDiv1.Layer.setZIndexOffset(1000);
+		geoDiv1.Layer.setZIndexOffset(40);
 		this.groupMap.map.panTo(geoDiv1.φλ);
 	}
 	this.baseDivs.content.replaceChild(this.geoDivs[i_gr].div, this.baseDivs.content.firstChild);
@@ -811,12 +812,14 @@ geoAlbum.prototype.focusImage = function (i_gr, i_im, signal = true) {
 	}
 	var igd = this.geoDivs[i_gr].imageGeoDivs;
 	for (var im in igd) {
-		if (!igd[im].NaNGeo())
+		if (!igd[im].NaNGeo()) {
 			igd[im].Layer.setGeoStatus('passiveImage');
+                        igd[im].Layer.setZIndexOffset(0);
+                    }
 	}
 	if (!igd[i_im].NaNGeo()) {
 		igd[i_im].Layer.setGeoStatus('activeImage');
-		igd[i_im].Layer.setZIndexOffset(1000);
+		igd[i_im].Layer.setZIndexOffset(40);
 		this.imageMap.map.panTo(Gr.imageGeoDivs[i_im].φλ);
 	}
 	if (signal) {
@@ -964,17 +967,17 @@ L.letterMarker = function (φλ, letter, geostatus, options) {
 * Библиотека статических функций - специализированных операций
 * @constructor --
 */
-geoAlb_lib = {};
+geoAlb_lib = {
+    // Три типа ОСМ объектов - теги для разбора, части адреса, необходимость выборки внутренностей и название
+    osm_tag : ['osm_nd_id', 'osm_w_id', 'osm_rl_id'],
+    osm_type : ['node', 'way', 'relation'],
+    osm_suff : ['', 'full', 'full'],
+    osm_title : ['Точка', 'Линия', 'Отношение'],
+    OSM_baseURL : 'https://www.openstreetmap.org' // Хранилище ОСМ данных здесь
+};
 
-// Три типа ОСМ объектов - теги для разбора, части адреса, необходимость выборки внутренностей и название
-geoAlb_lib.osm_tag = ['osm_nd_id', 'osm_w_id', 'osm_rl_id'];
-geoAlb_lib.osm_type = ['node', 'way', 'relation'];
-geoAlb_lib.osm_suff = ['', 'full', 'full'];
-geoAlb_lib.osm_title = ['Точка', 'Линия', 'Отношение'];
 // Теги, определяющие, что графический блок имеет географические координаты
 geoAlb_lib.geoImageDivTags = ['lon', 'lat', ...geoAlb_lib.osm_tag, 'coordinates', 'flickr_id'/*, 'panoramio_id'*/];
-
-geoAlb_lib.OSM_baseURL = 'https://www.openstreetmap.org'; // Хранилище ОСМ данных здесь
 geoAlb_lib.OSM_API_URL = geoAlb_lib.OSM_baseURL + '/api/0.6/'; //Выборка объектов отсюда;
 
 // Формирует одрес ОСМ объекта

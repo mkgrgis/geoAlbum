@@ -6,34 +6,34 @@ body {
 
 div[name="content"] {
     height: 94vh;
-    width: 62%;
-	overflow-y: scroll;
-	border: 4px #ddd solid;
-    box-shadow: 0 0 3px 3px #ccc;
+    width: 63%;
+    overflow-y: scroll;
+    border: 2px #fdd solid;
+    border-radius: 5px;
     float: left;
     padding-bottom: 15px;
+    margin-right: 2px;
 }
 
 div[name="maps"] {
-	right: 0;
-	margin-left: 63%;
-/*    margin-left: 680px;*/
+    right: 0;
+    margin-left: 63%;
 }
 
 div[name="detailmap"] {
     height: 56vh;
-	border: 5px #aaa solid;
-	border-radius: 5px;
-    box-shadow: 0 0 3px 3px #ccc;
-  /*  margin: 1em auto;*/
+    border: 1px #f00 solid;
+    border-radius: 5px;
+    box-shadow: 0 0 1px 1px #ccc;
+    margin: 3px auto;
 }
 
 div[name="overviewmap"] {
     height: 38vh;
-	border: 5px #aaa solid;
-	border-radius: 5px;
-    box-shadow: 0 0 3px 3px #ccc;
-  /*  margin: 1em auto;*/
+    border: 1px #000 solid;
+    border-radius: 5px;
+    box-shadow: 0 0 1px 1px #ccc;
+    margin: 3px auto;
 }
 
 .photoidx {
