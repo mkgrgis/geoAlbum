@@ -930,11 +930,11 @@ L.LetterMarker = L.Marker.extend({
 
 			L.DomUtil.addClass(this._icon, classToAdd);
 
-			/*			if (options.riseOnHover){
-							L.DomEvent
-								.on(this._icon, 'mouseover', this._bringToFront, this)
-								.on(this._icon, 'mouseout', this._resetZIndex, this);
-						}*/
+			if (options.riseOnHover){
+				L.DomEvent
+					.on(this._icon, 'mouseover', this._bringToFront, this)
+					.on(this._icon, 'mouseout', this._resetZIndex, this);
+			}
 		}
 
 		var panes = this._map._panes;
@@ -1081,7 +1081,6 @@ geoAlb_lib.OSM_node_geo = function (xml, id, φλ = true) {
 
 // Удаляет точки из geoJSON отношения или линии
 geoAlb_lib.geoJsonRemoveOsmNodes = function (geoJson) {
-
 	for (var i = 0; i < geoJson.features.length; i++) {
 		if (geoJson.features[i].geometry.type == 'Point') {
 			geoJson.features.splice(i, 1);
