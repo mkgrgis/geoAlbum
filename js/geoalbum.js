@@ -76,7 +76,8 @@ function geoAlbum(geoAlbum_div, options) {
 	}	
 	this.OSM_req_i = 0; // Счётчик запросов в ОСМ
 	this.EXIF_req_i = 0; // Счётчик запросов для получения EXIF
-	this.options = options;	
+	this.options = options;
+	this.OsmGDlib = new OsmGeoDocLib();	
 
 	// Расстановка событий загрузки изображения
 	var img_el = geoAlbum_div.getElementsByTagName('img');
@@ -257,8 +258,8 @@ geoAlbum.prototype.isGeoImageDiv = function (div) {
 		return false;
 	if (this.options.exif_geo)
 		return true;
-	for (var dt in geoAlb_lib.geoImageDivTags) {
-		if (div.hasAttribute(geoAlb_lib.geoImageDivTags[dt]))
+	for (var dt in this.OsmGDlib.geoImageDivTags) {
+		if (div.hasAttribute(this.OsmGDlib.geoImageDivTags[dt]))
 			return true;
 	}
 	return false;
@@ -421,16 +422,16 @@ geoAlbum.prototype.processImageDiv = function (div, i_im) {
 	this.markDiv(req);
 
 	var osm_tag_i = null;
-	for (var i_tg in geoAlb_lib.osm_tag) {
-		if (div.hasAttribute(geoAlb_lib.osm_tag[i_tg])) {
+	for (var i_tg in this.OsmGDlib.osm_tag) {
+		if (div.hasAttribute(this.OsmGDlib.osm_tag[i_tg])) {
 			osm_tag_i = i_tg;
 		}
 	}
 	if (osm_tag_i != null) {
-		req.id = Number(div.getAttribute(geoAlb_lib.osm_tag[osm_tag_i]));
-		req.type = geoAlb_lib.osm_type[osm_tag_i];
+		req.id = Number(div.getAttribute(this.OsmGDlib.osm_tag[osm_tag_i]));
+		req.type = this.OsmGDlib.osm_type[osm_tag_i];
 		this.OSM_req_i++;
-		geoAlb_lib.OSM_layer_request(req, this);
+		this.OsmGDlib.OSM_layer_request(req, this);
 	} else if (div.hasAttribute('lat') && div.hasAttribute('lon')) {
 		var φλ = [parseFloat(div.getAttribute('lat')), parseFloat(div.getAttribute('lon'))];
 		this.φλLayer(i_gr, i_im, φλ, req);
@@ -510,7 +511,7 @@ geoAlbum.prototype.init_geoMatrix = function () {
 	for (var i_gr in this.geoDivs) {
 		if (typeof this.geoDivs[i_gr].imageGeoDivs == 'undefined')
 			continue;
-		var φλ = geoAlb_lib.avgGeoDivs(this.geoDivs[i_gr].imageGeoDivs);
+		var φλ = this.OsmGDlib.avgGeoDivs(this.geoDivs[i_gr].imageGeoDivs);
 		if (isNaN(φλ[0]) || isNaN(φλ[1]))
 			continue;
 		this.geoDivs[i_gr].φλ = φλ;		
@@ -539,7 +540,7 @@ geoAlbum.prototype.init_geoMatrix = function () {
 	}
 
 	// Усреднение координат между группами
-	var φλ = geoAlb_lib.avgGeoDivs(this.geoDivs);	
+	var φλ = this.OsmGDlib.avgGeoDivs(this.geoDivs);	
 	if (isNaN(φλ[0]) || isNaN(φλ[1])){
 		alert ('В альбоме совсем нет никаких координат!');
 		return;
@@ -559,7 +560,7 @@ geoAlbum.prototype.init_geoMatrix = function () {
 
 	// Отображаем на обзорную карту главный объект - обычно это отношение границ покрываемой области.
 	if (this.OSM_rel_data.main_rel.id)
-		geoAlb_lib.OSM_layer_request(this.OSM_rel_data.main_rel, this);
+		this.OsmGDlib.OSM_layer_request(this.OSM_rel_data.main_rel, this);
 
 	if (geoAlbum.__hash_register.name.length == 0) {
 		window.addEventListener('hashchange', function (event) {
@@ -589,10 +590,21 @@ geoAlbum.prototype.imgIncrement = function () {
 	}
 };
 
+// Разбор внутренней ссылки на странице
+geoAlbum.deconstructHash = function (hash) {
+		var el = hash.split('#')[1];
+		if (!el)
+			return { name: null, i_gr: null, code_im: null };
+		var name = el.split('-')[0];
+		var i_gr = el.split('-')[1];
+		var code_im = el.split('-')[2];
+		return { name: name, i_gr: i_gr, code_im: code_im };
+	};
+
 // Срабатывает при изменении адреса
 geoAlbum.hashChange = function () {
 	var urlh = decodeURI(location.hash);
-	var ho = geoAlb_lib.deconstructHash(urlh);
+	var ho = geoAlbum.deconstructHash(urlh);
 	for (var i_GA in geoAlbum.__hash_register.GA) {
 		if (ho.name == geoAlbum.__hash_register.name[i_GA]) {
 			var i_gr = ho.i_gr - 1;
@@ -634,7 +646,7 @@ geoAlbum.prototype.init_groupMap = function () {
 
 // Запрос на выдачу всех подчинённых отношений к данному
 geoAlbum.prototype.req_SubAreas = function (rel_data) {
-	var osm_rl_id = geoAlb_lib.getSubAreas(rel_data.xml, rel_data.id);
+	var osm_rl_id = this.OsmGDlib.getSubAreas(rel_data.xml, rel_data.id);
 	for (var i = 0; i < osm_rl_id.length; i++) {
 		this.OSM_rel_data.subAreas.n_req++;
 		var req = {
@@ -644,7 +656,7 @@ geoAlbum.prototype.req_SubAreas = function (rel_data) {
 			id: osm_rl_id[i],
 			id_rel_req: rel_data.id
 		}; // console.table(req);
-		geoAlb_lib.OSM_layer_request(req, this);
+		this.OsmGDlib.OSM_layer_request(req, this);
 	}
 };
 
@@ -666,7 +678,7 @@ geoAlbum.prototype.init_imageMap = function () {
 	var OSMrd = this.OSM_rel_data;
 	if (OSMrd.main_rel.id && OSMrd.main_rel.layer) {
 		var xml = OSMrd.main_rel.xml;
-		var mr = geoAlb_lib.osmRelationGeoJson(xml, OSMrd.main_rel.id);
+		var mr = this.OsmGDlib.osmRelationGeoJson(xml, OSMrd.main_rel.id);
 		var gJs = L.geoJSON(mr, OSMrd.main_rel_style);
 		gJs.bindPopup(OSMrd.main_rel_title);
 		this.imageMap.Control.addOverlay(gJs, OSMrd.main_rel_title);
@@ -701,7 +713,7 @@ geoAlbum.prototype.mainRelationOk = function (data) {
 		mr[i] = data[i];
 	}
 	var ot = this.OSM_rel_data.main_rel_title;
-	var title = ot ? ot : geoAlb_lib.getOsmTag(mr.xml, 'relation', mr.id, 'name');
+	var title = ot ? ot : this.OsmGDlib.getOsmTag(mr.xml, 'relation', mr.id, 'name');
 	mr.layer.bindPopup(title);
 	mr.layer.setStyle(this.OSM_rel_data.main_rel_style);
 	this.init_groupMap();
@@ -710,9 +722,9 @@ geoAlbum.prototype.mainRelationOk = function (data) {
 
 // При завершении загрузки подчинённого контура
 geoAlbum.prototype.subAreaRelationOk = function (data) {
-	var sa_name = geoAlb_lib.getOsmTag(data.xml, 'relation', data.id, 'name');
+	var sa_name = this.OsmGDlib.getOsmTag(data.xml, 'relation', data.id, 'name');
 	if (!sa_name)
-		sa_name = geoAlb_lib.getOsmTag(data.xml, 'relation', data.id, 'description');
+		sa_name = this.OsmGDlib.getOsmTag(data.xml, 'relation', data.id, 'description');
 	data.layer.bindPopup(sa_name);
 	var gss = this.OSM_rel_data.subAreas;
 	data.layer.setStyle(gss.style);
@@ -843,7 +855,7 @@ geoAlbum.prototype.OSM_layer_include = function (xhr) {
 	data.xml = xhr.responseXML;
 	data.xhr = xhr;
 	if (data.mainRel || data.subArea) {
-		data.geoJSON = geoAlb_lib.osmRelationGeoJson(data.xml, data.id);
+		data.geoJSON = this.OsmGDlib.osmRelationGeoJson(data.xml, data.id);
 		data.layer = L.geoJSON(data.geoJSON);
 	}
 	if (data.mainRel) {
@@ -858,21 +870,21 @@ geoAlbum.prototype.OSM_layer_include = function (xhr) {
 geoAlbum.prototype.includeMatrixElement = function (data) {
 	var xml = data.xml;
 	var req = data.xhr.req_par;
-	geoAlb_lib.OSM_href(req.div, req.id, req.type);
+	this.OsmGDlib.OSM_href(req.div, req.id, req.type);
 	var elDiv = this.geoDivs[req.i_gr].imageGeoDivs[req.i_im];
-	var name = geoAlb_lib.getOsmTag(xml, req.type, req.id, 'name');
-	name = name ? name : geoAlb_lib.getOsmTag(xml, req.type, req.id, 'ref');
+	var name = this.OsmGDlib.getOsmTag(xml, req.type, req.id, 'name');
+	name = name ? name : this.OsmGDlib.getOsmTag(xml, req.type, req.id, 'ref');
 	if (req.type == "node") {
-		elDiv.φλ = geoAlb_lib.OSM_node_geo(xml, req.id);
+		elDiv.φλ = this.OsmGDlib.OSM_node_geo(xml, req.id);
 	} else { // OSM rel, way
 		var geoJson0 = osmtogeojson(xml);
 		var polyStyle = this.imagePolygonStyle;
 		polyStyle.color = req.div.hasAttribute('color') ? req.div.getAttribute('color') : polyStyle.color;
-		var polyLayer = L.geoJSON(geoAlb_lib.geoJsonRemoveOsmNodes(geoJson0), polyStyle);
+		var polyLayer = L.geoJSON(this.OsmGDlib.geoJsonRemoveOsmNodes(geoJson0), polyStyle);
 		polyLayer.options.req = req;
 		this.imgφλLayer(polyLayer, req.letter + (name ? (" ⇒ " + name) : ""));
 		elDiv.polyLayer = polyLayer;
-		elDiv.φλ = geoAlb_lib.OSM_node_avg(xml);
+		elDiv.φλ = this.OsmGDlib.OSM_node_avg(xml);
 	}
 	var φλ = elDiv.φλ;
 	var nLay = L.letterMarker(φλ, req.letter, 'passiveImage');
@@ -963,227 +975,4 @@ L.letterMarker = function (φλ, letter, geostatus, options) {
 	return new L.LetterMarker(φλ, letter, geostatus, options);
 };
 
-/**
-* Библиотека статических функций - специализированных операций
-* @constructor --
-*/
-geoAlb_lib = {
-    // Три типа ОСМ объектов - теги для разбора, части адреса, необходимость выборки внутренностей и название
-    osm_tag : ['osm_nd_id', 'osm_w_id', 'osm_rl_id'],
-    osm_type : ['node', 'way', 'relation'],
-    osm_suff : ['', 'full', 'full'],
-    osm_title : ['Точка', 'Линия', 'Отношение'],
-    OSM_baseURL : 'https://www.openstreetmap.org' // Хранилище ОСМ данных здесь
-};
-
-// Теги, определяющие, что графический блок имеет географические координаты
-geoAlb_lib.geoImageDivTags = ['lon', 'lat', ...geoAlb_lib.osm_tag, 'coordinates', 'flickr_id'/*, 'panoramio_id'*/];
-geoAlb_lib.OSM_API_URL = geoAlb_lib.OSM_baseURL + '/api/0.6/'; //Выборка объектов отсюда;
-
-// Формирует одрес ОСМ объекта
-geoAlb_lib.OSM_URL = function (type, id, suff) {
-	var _smod = (suff != '') ? '/' + suff : '';
-	return geoAlb_lib.OSM_API_URL + type + '/' + id + _smod;
-};
-
-// Разбор внутренней ссылки на странице
-geoAlb_lib.deconstructHash = function (hash) {
-	var el = hash.split('#')[1];
-	if (!el)
-		return { name: null, i_gr: null, code_im: null };
-	var name = el.split('-')[0];
-	var i_gr = el.split('-')[1];
-	var code_im = el.split('-')[2];
-	return { name: name, i_gr: i_gr, code_im: code_im };
-};
-
-// Асинхронное получение файла
-geoAlb_lib.OSM_layer_request = function (req_par, GA) {
-	var i = geoAlb_lib.osm_type.indexOf(req_par.type);
-	var url = geoAlb_lib.OSM_URL(req_par.type, req_par.id, geoAlb_lib.osm_suff[i]);
-	var xhr = new XMLHttpRequest();
-	xhr.req_par = req_par;
-	xhr.url = url;
-	xhr.GA = GA;
-	xhr.open('GET', url, true);
-	xhr.send();
-	xhr.onreadystatechange = function () {
-		if (xhr.readyState != 4) return;
-		if (xhr.status != 200 && (xhr.status != 0 || xhr.response)) {
-			console.warn("Такого объекта нет в БД OSM! " + xhr.req_par.id + " " + xhr.req_par.type + " " + xhr.url);
-		} else
-			xhr.GA.OSM_layer_include(xhr);
-	};
-};
-
-// Выбирает широту и долготу из XML узла единстственной точки в формате OSM
-geoAlb_lib.OSM_xml_node_geo = function (OSM_node) {
-	return [parseFloat(OSM_node.getAttribute('lat')), parseFloat(OSM_node.getAttribute('lon'))];
-};
-
-// Вычисляет среднее геометрическое массива координат
-geoAlb_lib.φλ_avg = function (φλ) {
-	if (φλ.length == 1)
-		return φλ[0];
-	var φ = []; var λ = [];
-	for (var i in φλ) {
-		if (φλ[i] != null) {
-			φ.push(φλ[i][0]);
-			λ.push(φλ[i][1]);
-		}
-	}
-	var minφ = Math.min.apply(null, φ);
-	var maxφ = Math.max.apply(null, φ);
-	var avg_φ = (minφ + maxφ) / 2;
-	var minλ = Math.min.apply(null, λ);
-	var maxλ = Math.max.apply(null, λ);
-	var avg_λ = (minλ + maxλ) / 2;
-	return [avg_φ, avg_λ];
-};
-
-// Усреднение в массиве geoDiv
-geoAlb_lib.avgGeoDivs = function (a) {
-	var φλ = [];
-	for (var i in a) {
-		if (!a[i].NaNGeo()) {
-			φλ.push(a[i].φλ);
-		}
-	}
-	return geoAlb_lib.φλ_avg(φλ);
-};
-
-// Вычисляет среднее геометрическое точек из OSM XML документа
-geoAlb_lib.OSM_node_avg = function (xml) {
-	var φλ = [];
-	var el = xml.getElementsByTagName('node');
-	for (var i = 0; i < el.length; i++) {
-		φλ.push([el[i].getAttribute('lat'),
-		el[i].getAttribute('lon')]);
-	}
-	return geoAlb_lib.φλ_avg(φλ);
-};
-
-// По коду точки в OSM возвращает объект с широтой и долготой.
-geoAlb_lib.OSM_node_geo = function (xml, id, φλ = true) {
-	var nodes = xml.getElementsByTagName('node');
-	var nd = {};
-	for (var i = 0; i < nodes.length; i++) {
-		if (nodes[i].getAttribute('id') == id)
-			nd = nodes[i];
-	}
-	if (!nd)
-		return null;
-	var osmg = geoAlb_lib.OSM_xml_node_geo(nd);
-	if (φλ)
-		return osmg;
-	return [osmg[1], osmg[0]];
-};
-
-// Удаляет точки из geoJSON отношения или линии
-geoAlb_lib.geoJsonRemoveOsmNodes = function (geoJson) {
-	for (var i = 0; i < geoJson.features.length; i++) {
-		if (geoJson.features[i].geometry.type == 'Point') {
-			geoJson.features.splice(i, 1);
-			i--;
-		}
-	}
-	return geoJson;
-};
-
-// Получает из документа ветвь отношения с данным кодом
-geoAlb_lib.getRelationXmlTree = function (xml, osm_rl_id) {
-	var relations = xml.getElementsByTagName('relation');
-	for (var i = 0; i < relations.length; i++) {
-		if (relations[i].getAttribute('id') == osm_rl_id)
-			return relations[i];
-	}
-	return null;
-};
-
-// Получает массив номеров отношений, содержащих подчинённые территории
-geoAlb_lib.getSubAreas = function (xml, osm_rl_id) {
-	var relXml = geoAlb_lib.getRelationXmlTree(xml, osm_rl_id);
-	if (!relXml)
-		return null;
-	var subAreas = [];
-	var members = relXml.getElementsByTagName('member');
-	var j = 0;
-	for (var i = 0; i < members.length; i++) {
-		if (members[i].getAttribute('type') == 'relation' && members[i].getAttribute('role') == 'subarea')
-			subAreas[j++] = members[i].getAttribute('ref');
-	}
-	return subAreas;
-};
-
-// Удаляет чужие полигоны из документа, оставляя собственный полигон заданного отношения
-geoAlb_lib.geoJsonDecomposeSubAreas = function (geoJson, osm_rl_id) {
-	var subrel = []; var j = 0;
-	for (var i = 0; i < geoJson.features.length; i++) {
-		if (geoJson.features[i].geometry.type.indexOf('Polygon') + 1)
-			if (geoJson.features[i].id.indexOf('relation/') + 1) {
-				if (geoJson.features[i].id != 'relation/' + osm_rl_id) {
-					geoJson.features.splice(i--, 1);
-				}
-			}
-			else // Полигоны от линий удаляем
-				geoJson.features.splice(i--, 1);
-	}
-	return geoJson;
-};
-
-// Оставляет собственный полигон заданного отношения
-geoAlb_lib.relationSelfPolygon = function (geoJson, osm_rl_id) {
-	for (var i = 0; i < geoJson.features.length; i++) {
-		if ((geoJson.features[i].geometry.type.indexOf('Polygon') + 1) &&
-			(geoJson.features[i].id == 'relation/' + osm_rl_id))
-			return i;
-	}
-	return null;
-};
-
-// Получить значение данного тега
-geoAlb_lib.getOsmTag = function (xml, type, osm_id, tag) {
-	var ok = null;
-	var elements = xml.getElementsByTagName(type);
-	for (var i = 0; i < elements.length; i++) {
-		if (elements[i].getAttribute('id') == osm_id) {
-			ok = ' ';
-			break;
-		}
-	}
-	if (!ok)
-		return null;
-	var tags = elements[i].getElementsByTagName('tag');
-	for (var j = 0; j < tags.length; j++) {
-		if (tags[j].getAttribute('k') == tag)
-			return tags[j].getAttribute('v');
-	}
-	return null;
-};
-
-// Создание GeoJson из основного контура отношения, представленного в xml документе
-geoAlb_lib.osmRelationGeoJson = function (xml, rel_id) {
-	var geoJson0 = osmtogeojson(xml);
-	var geoJson1 = geoAlb_lib.geoJsonRemoveOsmNodes(geoJson0);
-	var geoJson2 = geoAlb_lib.geoJsonDecomposeSubAreas(geoJson1, rel_id);
-	geoJson2.osm_rel_id = rel_id;
-	return geoJson2;
-};
-
-// Добавляет ссылку на объявленные в свойствах объекты OSM после последнего элемента секции.
-geoAlb_lib.OSM_href = function (div, id, type) {
-	var e = document.createElement('br');
-	div.appendChild(e);
-	var e = document.createElement('a');
-	e.href = geoAlb_lib.OSM_baseURL + '/' + type + '/' + id;
-	var i = geoAlb_lib.osm_type.indexOf(type);
-	e.appendChild(document.createTextNode(geoAlb_lib.osm_title[i] + ' OSM'));
-	div.appendChild(e);
-	div.appendChild(document.createTextNode(' '));
-	var e = document.createElement('a');
-	e.href = geoAlb_lib.OSM_URL(type, id, geoAlb_lib.osm_suff[i]);
-	e.appendChild(document.createTextNode('Координаты с OSM в XML'));
-	div.appendChild(e);
-	return e.href;
-};
 /* КОНЕЦ БИБЛИОТЕКИ */
