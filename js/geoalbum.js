@@ -77,7 +77,7 @@ function geoAlbum(geoAlbum_div, options) {
 	this.OSM_req_i = 0; // Счётчик запросов в ОСМ
 	this.EXIF_req_i = 0; // Счётчик запросов для получения EXIF
 	this.options = options;
-	this.OsmGDlib = new OsmGeoDocLib();	
+	this.OsmGDlib = new OsmGeoDocLib();
 
 	// Расстановка событий загрузки изображения
 	var img_el = geoAlbum_div.getElementsByTagName('img');
@@ -197,7 +197,7 @@ geoAlbum.prototype.modifyRootDiv = function (){ // Подмена места р�
 	this.modifRoot = true;
 };
 
-geoAlbum.prototype.text_Im = function (div) { // Текст к элементу альбома 
+geoAlbum.prototype.text_Im = function (div) { // Текст к элементу альбома
 	if (typeof this.options.functionImgH == 'function') {
 		try {
 			return this.options.functionImgH(div);
